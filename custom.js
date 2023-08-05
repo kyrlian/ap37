@@ -56,7 +56,7 @@
       var time = d.year +
         leftPad(d.month, 2, '0') + leftPad(d.day, 2, '0') + ' ' +
         leftPad(d.hour, 2, '0') + leftPad(d.minute, 2, '0');
-      print(w - len(time) - 2, 0, time);
+      print(w - time.length - 2, 0, time);
     },
     init: function () {
       time.update();
