@@ -56,7 +56,7 @@
       var time = d.year +
         leftPad(d.month, 2, '0') + leftPad(d.day, 2, '0') + ' ' +
         leftPad(d.hour, 2, '0') + leftPad(d.minute, 2, '0');
-      print(w - 13, 0, time);
+      print(w - len(time) - 2, 0, time);
     },
     init: function () {
       time.update();
@@ -66,8 +66,8 @@
 
   var battery = {
     update: function () {
-      print(w - 17, 0,
-        leftPad(ap37.getBatteryLevel(), 3, ' '));
+      print(w - 20, 0,
+        leftPad(ap37.getBatteryLevel(), 3, ' ')+'%');
     },
     init: function () {
       battery.update();
