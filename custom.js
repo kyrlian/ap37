@@ -56,7 +56,7 @@
       var time = d.year +
         leftPad(d.month, 2, '0') + leftPad(d.day, 2, '0') + ' ' +
         leftPad(d.hour, 2, '0') + leftPad(d.minute, 2, '0');
-      print(w - time.length - 2, 0, time);
+      print(w - time.length - 3, 0, time);
     },
     init: function () {
       time.update();
@@ -66,7 +66,7 @@
 
   var battery = {
     update: function () {
-      print(w - 20, 0,
+      print(w - 21, 0,
         leftPad(ap37.getBatteryLevel(), 3, ' ')+'%');
     },
     init: function () {
@@ -161,15 +161,15 @@
       }
     },
     printApp: function (app, highlight) {
-      print(app.x0, app.y, '_' +
-        app.name.substring(0, apps.appWidth - 2),
+      print(app.x0, app.y, 
+        app.name.substring(0, apps.appWidth - 1),
         highlight ? '#ff3333' : '#999999');
       if (highlight) {
         setTimeout(function () {
           apps.printApp(app, false);
         }, 1000);
       } else {
-        print(app.x0 + 1, app.y, app.name.substring(0, 1), '#ffffff');
+        print(app.x0, app.y, app.name.substring(0, 1), '#ffffff');
       }
     },
     init: function () {
