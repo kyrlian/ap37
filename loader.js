@@ -1,4 +1,6 @@
-url='https://raw.githubusercontent.com/kyrlian/ap37/master/script.js'  
+branch='master';
+script='custom.js';
+url='https://raw.githubusercontent.com/kyrlian/ap37/'+branch+'/'+script;  
 var xhr = new XMLHttpRequest();
 xhr.open('GET', url, true);
 xhr.onload = function () {
