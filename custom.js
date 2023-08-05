@@ -1,13 +1,17 @@
   'use strict';
-  ;
 
   // config
+  //TODO tuple config
+  let config={}
   let appversion='ap37-kyr';
   let hideapps=["Google", "Freebox","Steam Chat","Steam Link"];
   let appnameminwidth=8;
   let notifstart=2;
   let appstart =6;
   let displayablenotifs =appstart-notifstart-1;//TODO: use it below
+  let bgcolor='';//TODO: use it below
+  let textcolor='';//TODO: use it below
+  let highlightcolor='';//TODO: use it below
   //
   var w, h
   function init() {
@@ -17,7 +21,7 @@
     h = ap37.getScreenHeight();
 
     background.init();
-    print(3, 0, appversion);
+    print(3, 0, appversion);//TODO move to bottom left
     time.init();
     battery.init();
     notifications.init();
@@ -32,7 +36,7 @@
 
   // modules
 
-  var background = {
+  var background = {//TODO no need to save, just regen as needed
     buffer: [],
     pattern: '',
     printPattern: function (x0, xf, y) {
@@ -40,7 +44,7 @@
         background.pattern.substring(y * w + x0, y * w + xf),
         '#333333');
     },
-    init: function () {
+    init: function () {//TODO move char list to config
       const chars='-._ /';//random chars for background
       for (let i = 0; i < w*h; i++) {
         background.pattern += chars.charAt(Math.floor(Math.random() * chars.length));
@@ -58,7 +62,7 @@
       var time = d.year +
         leftPad(d.month, 2, '0') + leftPad(d.day, 2, '0') + ' ' +
         leftPad(d.hour, 2, '0') + leftPad(d.minute, 2, '0');
-      print(w - time.length - 3, 0, time);
+      print(w - time.length - 3, 0, time);//TODO move to left
     },
     init: function () {
       time.update();
@@ -69,7 +73,7 @@
   var battery = {
     update: function () {
       print(w - 21, 0,
-        leftPad(ap37.getBatteryLevel(), 3, ' ')+'%');
+        leftPad(ap37.getBatteryLevel(), 3, ' ')+'%');//TODO move right after moving time
     },
     init: function () {
       battery.update();
@@ -77,7 +81,7 @@
     }
   };
 
-  var notifications = {
+  var notifications = {//TODO Debug duplicate notif
     list: [],
     active: false,
     update: function () {
@@ -271,4 +275,4 @@
   init();
 
 
-// pull requests github.com/apseren/ap37
+// pull requests github.com/kyrlian/ap37
