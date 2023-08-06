@@ -1,4 +1,5 @@
   'use strict';
+ 
 
   // config
   //TODO tuple config
@@ -12,6 +13,8 @@
   let bgcolor='';//TODO: use it below
   let textcolor='';//TODO: use it below
   let highlightcolor='';//TODO: use it below
+  let appprefix='>';
+  let appprefixonnotif='*';
   //
   var w, h
   function init() {
@@ -106,11 +109,13 @@
     },
     printNotification: function (notification, highlight) {
       var name = notification.name;
+      //TODO: detect app and prefix with * or number of notifs
       if (notification.ellipsis) {
         var length = Math.min(name.length, w - 10);
         name = name.substring(0, length) + "... +" +
           (notifications.list.length - 3);//override last notification with: name... number of remaining notifs
       }
+      // TODO see if have more info to show like app: message
       print(0, notification.y, name, highlight ? '#ff3333' : '#ffffff');// highlight is set on touch callback 
       if (highlight) {// if highlight set a timeout to reset to normal
         setTimeout(function () {
@@ -168,13 +173,13 @@
     printApp: function (app, highlight) {
       print(app.x0, app.y, 
         app.name.substring(0, apps.appWidth - 1),
-        highlight ? '#ff3333' : '#999999');
+        highlight ? '#ff3333' : '#999999');//TODO add app prefix and -1-appprefix.length
       if (highlight) {
         setTimeout(function () {
           apps.printApp(app, false);
         }, 1000);
       } else {
-        print(app.x0, app.y, app.name.substring(0, 1), '#ffffff');
+        print(app.x0, app.y, app.name.substring(0, 1), '#ffffff');//highlight first letter - TODO shift+ appprefix.length
       }
     },
     init: function () {
@@ -185,6 +190,7 @@
         apps.list.push(app);
        }
       }
+      // TODO print continous on each line
       apps.lines = Math.floor(
         (h - apps.topMargin - apps.bottomMargin) / apps.lineHeight);
       apps.appsPerLine = Math.ceil(apps.list.length / apps.lines);
@@ -196,7 +202,7 @@
         apps.appsPerLine = Math.floor(w / apps.appWidth);
         apps.isNextPageButtonVisible = true;// and activate pagination
         print(w - 4, h - 9, '>>>');
-        print(w - 4, h - 8, '>>>');
+        print(w - 4, h - 8, '>>>');// TODO keep only one
       } else {
         apps.isNextPageButtonVisible = false;
         background.printPattern(w - 4, w, h - 9);// erase pagination >>>
@@ -237,8 +243,8 @@
   function print(x, y, text, color) {
     color = color || '#ffffff';
     background.buffer[y] = background.buffer[y].substr(0, x) + text +
-      background.buffer[y].substr(x + text.length);
-    ap37.print(x, y, text, color);
+      background.buffer[y].substr(x + text.length);// TODO remove ?
+    ap37.print(x, y, text, color);// TODO randomize 2nd digit of each color
   }
 
   function get(url, callback) {
@@ -275,4 +281,5 @@
   init();
 
 
-// pull requests github.com/kyrlian/ap37
+// pull requests github.com/apseren/ap37
+
