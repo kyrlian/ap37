@@ -239,18 +239,18 @@
   };
 
   //utils
-function randomizeHexColor(color) {
-  function rndhex() {
-    return "0123456789abcdef".charAt(Math.floor(Math.random() * 16));
+  function randomizeHexColor(c) {
+    function rndhex() {
+      return "0123456789abcdef".charAt(Math.floor(Math.random() * 16));
+    }
+    return "#" + c.charAt(1)+ rndhex()+c.charAt(3) + rndhex()+c.charAt(5) + rndhex();
   }
-  return "#" + color.substring(1,1)+ rndhex()+color.substring(3,1) + rndhex()+color.substring(5,1) + rndhex();
-} 
 
   function print(x, y, text, color) {
-    color = (color || '#ffffff');
+    let rcolor =  randomizeHexColor(color || '#ffffff');
     background.buffer[y] = background.buffer[y].substr(0, x) + text +
       background.buffer[y].substr(x + text.length);// TODO remove ?
-    ap37.print(x, y, text, color);// TODO randomize 2nd digit of each color
+    ap37.print(x, y, text, rcolor);// TODO randomize 2nd digit of each color
   }
 
   function get(url, callback) {
