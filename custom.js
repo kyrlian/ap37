@@ -5,7 +5,7 @@
   //TODO tuple config
   let config={}
   let appversion='ap37-kyr';
-  let hideapps=["Google", "Freebox","Play Games","Steam Chat","Steam Link"];
+  let hideapps=["Google", "Freebox","Hacker's Keyboard","Play Games","Steam Chat","Steam Link"];
   let apprename={"foobar2000":"foobar","Mars: Mars":"Mars"}// TODO if(apprename.includes(app.name)){ 
   let appnameminwidth=8;
   let notifstart=2;
@@ -85,7 +85,7 @@
     }
   };
 
-  var notifications = {//TODO Debug duplicate notif
+  var notifications = {
     list: [],
     active: false,
     update: function () {
@@ -157,7 +157,7 @@
     getappname: function(app){
       let n=app.name 
       if(n in apprename){ n=apprename[n]}
-      return n.replaceAll(" ","");//TODO use below
+      return appprefix+n.replaceAll(" ","");
     },
     printPage: function (page) {
       var appPos = page * apps.appsPerPage;
@@ -180,13 +180,13 @@
       n=apps.getappname(app)
       print(app.x0, app.y, 
         n.substring(0, apps.appWidth - 1),
-        highlight ? '#ff3333' : '#999999');//TODO add app prefix and -1-appprefix.length
+        highlight ? '#ff3333' : '#999999');
       if (highlight) {
         setTimeout(function () {
           apps.printApp(app, false);
         }, 1000);
       } else {
-        print(app.x0, app.y, n.substring(0, 1), '#ffffff');//highlight first letter - TODO shift+ appprefix.length
+        print(app.x0+appprefix.length, app.y, n.charAt(appprefix.length), '#ffffff');//highlight first letter after prefix
       }
     },
     init: function () {
