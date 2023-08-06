@@ -8,7 +8,7 @@
   let hideapps=["Internet","Google", "Freebox","Hacker's Keyboard","Play Games","Steam Chat","Steam Link"];
   let apprename={"foobar2000":"foobar","Mars: Mars":"Mars"}
   let bgchars='-._ /'
-  let notifguesslist={"card request":"Clash Royale", "new messages":"Gmail"}
+  let notifguesslist={" Chest unlocked":"Clash Royale","card request":"Clash Royale", "new messages":"Gmail"}
   let appnameminwidth=8;
   let notifstart=2;
   let displayablenotifs = 6
@@ -30,8 +30,8 @@
     print(3, h-1, appversion);//bottom left
     time.init();
     battery.init();
+    apps.init()
     notifications.init();
-    apps.init();
     print(w - 5, h - 1, 'EOF');
 
     ap37.setOnTouchListener(function (x, y) {
@@ -94,7 +94,11 @@
       notifications.active = ap37.notificationsActive();
       if (notifications.active) {
         var nots = ap37.getNotifications();
-        notifications.list = nots;
+        notifications.list = nots; 
+        for ( var i=0;i<nots.length;i++){
+          var notif = nots[i]
+          notifications.guessapp(notif)
+        }//TODO merge 2 for
         for (var i = 0; i < displayablenotifs; i++) {// display max n notifications
           var y = i + notifstart;// print notifications from line 2
           background.printPattern(0, w, y);//erase line first
@@ -106,6 +110,7 @@
             notifications.printNotification(nots[i], false);
           }
         }
+        // TODO use apps.notifcount to add counts
       } else {
         print(0,notifstart , 'Activate notifications');
       }
@@ -116,7 +121,8 @@
         if (nn.search(k)>=0){
           notifapp=notifguesslist[k]
           notification.app=notifapp
-          notification.display = notifapp+":"+nn
+          notification.display = notifapp+":"+nn 
+          apps.notifcount[notifapp]=apps.notifcount[notifapp]+1
           //return notifguesslist[k]
         }
       }
@@ -124,11 +130,7 @@
     },
     printNotification: function (notification, highlight) {
       var name = notification.name;
-      //var appguess = 
-      notifications.guessapp(notification)
-      var disp = notification.display || name //( appguess ? appguess+":":"" )+name 
-
-      //TODO: detect app and prefix with * or number of notifs
+      var disp = notification.display || name 
       if (notification.ellipsis) {
         var length = Math.min(disp.length, w - 7);
         disp = disp.substring(0, length) + "... +" +
@@ -162,6 +164,7 @@
 
   var apps = {
     list: [],
+    notifcount:{},
     lineHeight: 2,
     topMargin: appstart,
     bottomMargin: 8,
@@ -213,6 +216,7 @@
        var app=appslist[i];
        if (!hideapps.includes(app.name)){
         apps.list.push(app);
+        apps.notifcount[app.name]=0;
        }
       }
       // TODO print continous on each line
@@ -326,7 +330,7 @@
   }
 
   init();
-  print(0,h-2,"debug:"+JSON.stringify(ap37.print)+ap37+console.dir(ap37))
+  //print(0,h-2,"debug:"+JSON.stringify(ap37.print)+ap37+console.dir(ap37))
 
 // pull requests github.com/apseren/ap37
 
