@@ -6,7 +6,7 @@
   let config={}
   let appversion='ap37-kyr';
   let hideapps=["Google", "Freebox","Play Games","Steam Chat","Steam Link"];
-  let apprename={"foobar2000":"foobar"}// TODO if(apprename.includes(app.name)){ 
+  let apprename={"foobar2000":"foobar","Mars: Mars":"Mars"}// TODO if(apprename.includes(app.name)){ 
   let appnameminwidth=8;
   let notifstart=2;
   let appstart =6;
@@ -157,7 +157,7 @@
     getappname: function(app){
       let n=app.name 
       if(n in apprename){ n=apprename[n]}
-      return n.replace(" ","");//TODO use below
+      return n.replaceAll(" ","");//TODO use below
     },
     printPage: function (page) {
       var appPos = page * apps.appsPerPage;
@@ -258,15 +258,14 @@
     }
     let r="#"
     for (let j=0;j<6;j++){
-     r=r+shift(c.charAt(j))
+     r+=shift(c.charAt(j))
     }
-    return r
-    //return "#" + c.charAt(1)+ rndhex()+c.charAt(3) + rndhex()+c.charAt(5) + rndhex();
-    //return "#" + rndhex()+ rndhex()+c.charAt(3) + rndhex()+c.charAt(5) + rndhex();
+    //return r
+    return "#" + c.charAt(1)+ rndhex()+c.charAt(3) + rndhex()+c.charAt(5) + rndhex();
   }
 
   function print(x, y, text, color) {
-    let rcolor =  randomizeHexColor(color || '#ffffff');
+    let rcolor =  randomizeHexColor(color || '#eeeeee');
     background.buffer[y] = background.buffer[y].substr(0, x) + text +
       background.buffer[y].substr(x + text.length);// TODO remove ?
     ap37.print(x, y, text, rcolor);
