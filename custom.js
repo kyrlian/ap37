@@ -245,6 +245,11 @@
     }
   };
 
+  var meteo ={//TODO stub meteo
+    url:"https://api.open-meteo.com/v1/forecast?latitude=52.52&longitude=13.41&current_weather=true&forecast_days=1"
+   // url:"https://api.open-meteo.com/v1/forecast?latitude=48.8534&longitude=2.3488&hourly=apparent_temperature&forecast_days=1"
+  };
+
   //utils
   hexchars="0123456789abcdef";
   function randomizeHexColor(c) {
