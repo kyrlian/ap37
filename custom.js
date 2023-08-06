@@ -5,7 +5,8 @@
   //TODO tuple config
   let config={}
   let appversion='ap37-kyr';
-  let hideapps=["Google", "Freebox","Steam Chat","Steam Link"];
+  let hideapps=["Google", "Freebox","Play Games","Steam Chat","Steam Link"];
+  let apprename={"foobar2000":"foobar"}// TODO if(apprename.includes(app.name)){ 
   let appnameminwidth=8;
   let notifstart=2;
   let appstart =6;
@@ -244,6 +245,7 @@
       return "0123456789abcdef".charAt(Math.floor(Math.random() * 16));
     }
     return "#" + c.charAt(1)+ rndhex()+c.charAt(3) + rndhex()+c.charAt(5) + rndhex();
+    //return "#" + rndhex()+ rndhex()+c.charAt(3) + rndhex()+c.charAt(5) + rndhex();
   }
 
   function print(x, y, text, color) {
