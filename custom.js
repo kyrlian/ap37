@@ -111,6 +111,7 @@
           }
         }
         // TODO use apps.notifcount to add counts
+        // rewite app list as a dict first
       } else {
         print(0,notifstart , 'Activate notifications');
       }
@@ -123,10 +124,8 @@
           notification.app=notifapp
           notification.display = notifapp+":"+nn 
           apps.notifcount[notifapp]=apps.notifcount[notifapp]+1
-          //return notifguesslist[k]
         }
       }
-      //return ""
     },
     printNotification: function (notification, highlight) {
       var name = notification.name;
@@ -163,8 +162,8 @@
   };
 
   var apps = {
-    list: [],
-    notifcount:{},
+    list: [],//TODO use a dict for easy lookup ?
+    notifcount:{},//TODO integrate in app
     lineHeight: 2,
     topMargin: appstart,
     bottomMargin: 8,
@@ -215,8 +214,9 @@
       for (var i = 0; i<appslist.length; i++){
        var app=appslist[i];
        if (!hideapps.includes(app.name)){
+        app.notifcount=0;
         apps.list.push(app);
-        apps.notifcount[app.name]=0;
+        apps.notifcount[app.name]=0;//TODO remove ?
        }
       }
       // TODO print continous on each line
