@@ -240,15 +240,14 @@
 
   //utils
 function randomizeHexColor(color) {
-  function getRandomHexDigit() {
-    const hexDigits = "0123456789ABCDEF";
-    return hexDigits[Math.floor(Math.random() * 16)];
+  function rndhex() {
+    return "0123456789abcdef".charAt(Math.floor(Math.random() * 16));
   }
-  return "#" + color.substring(1,1)+ getRandomHexDigit()+color.substring(3,1) + getRandomHexDigit()+color.substring(5,1) + getRandomHexDigit();
+  return "#" + color.substring(1,1)+ rndhex()+color.substring(3,1) + rndhex()+color.substring(5,1) + rndhex();
 } 
 
   function print(x, y, text, color) {
-    color = randomizeHexColor(color || '#ffffff');
+    color = (color || '#ffffff');
     background.buffer[y] = background.buffer[y].substr(0, x) + text +
       background.buffer[y].substr(x + text.length);// TODO remove ?
     ap37.print(x, y, text, color);// TODO randomize 2nd digit of each color
