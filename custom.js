@@ -154,6 +154,10 @@
     appsPerPage: 0,
     currentPage: 0,
     isNextPageButtonVisible: false,
+    getappname: function(app){
+      //if(apprename.includes(app.name
+      return app.name;//TODO remove spaces, replaceappname, use below
+    },
     printPage: function (page) {
       var appPos = page * apps.appsPerPage;
       for (var x = 0; x + apps.appWidth <= w; x += apps.appWidth) {
@@ -244,6 +248,7 @@
     function rndhex() {
       return "0123456789abcdef".charAt(Math.floor(Math.random() * 16));
     }
+    //TODO for each digit go up/dowm by 1
     return "#" + c.charAt(1)+ rndhex()+c.charAt(3) + rndhex()+c.charAt(5) + rndhex();
     //return "#" + rndhex()+ rndhex()+c.charAt(3) + rndhex()+c.charAt(5) + rndhex();
   }
