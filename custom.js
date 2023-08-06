@@ -5,12 +5,14 @@
   //TODO tuple config
   let config={}
   let appversion='ap37-kyr';
-  let hideapps=["Google", "Freebox","Hacker's Keyboard","Play Games","Steam Chat","Steam Link"];
-  let apprename={"foobar2000":"foobar","Mars: Mars":"Mars"}// TODO if(apprename.includes(app.name)){ 
+  let hideapps=["Internet","Google", "Freebox","Hacker's Keyboard","Play Games","Steam Chat","Steam Link"];
+  let apprename={"foobar2000":"foobar","Mars: Mars":"Mars"}
+  let bgchars='-._ /'
+  let notifguesslist={"card request":"Clash Royale", "new messages":"Gmail"}
   let appnameminwidth=8;
   let notifstart=2;
-  let appstart =6;
-  let displayablenotifs =appstart-notifstart-1;//TODO: use it below
+  let displayablenotifs = 6
+  let appstart = notifstart +displayablenotifs+1
   let bgcolor='';//TODO: use it below
   let textcolor='';//TODO: use it below
   let highlightcolor='';//TODO: use it below
@@ -25,7 +27,7 @@
     h = ap37.getScreenHeight();
 
     background.init();
-    print(3, 0, appversion);//TODO move to bottom left
+    print(3, h-1, appversion);//bottom left
     time.init();
     battery.init();
     notifications.init();
@@ -49,9 +51,9 @@
         '#333333');
     },
     init: function () {//TODO move char list to config
-      const chars='-._ /';//random chars for background
+      //random chars for background
       for (let i = 0; i < w*h; i++) {
-        background.pattern += chars.charAt(Math.floor(Math.random() * chars.length));
+        background.pattern += bgchars.charAt(Math.floor(Math.random() * bgchars.length));
       }
       for (var i = 0; i < h; i++) {
         background.buffer.push(background.pattern.substr(i * w, w));
@@ -66,7 +68,7 @@
       var time = d.year +
         leftPad(d.month, 2, '0') + leftPad(d.day, 2, '0') + ' ' +
         leftPad(d.hour, 2, '0') + leftPad(d.minute, 2, '0');
-      print(w - time.length - 3, 0, time);//TODO move to left
+      print(3, 0, time);
     },
     init: function () {
       time.update();
@@ -76,8 +78,8 @@
 
   var battery = {
     update: function () {
-      print(w - 21, 0,
-        leftPad(ap37.getBatteryLevel(), 3, ' ')+'%');//TODO move right after moving time
+      print(w - 6, 0,
+        leftPad(ap37.getBatteryLevel(), 3, ' ')+'%');
     },
     init: function () {
       battery.update();
@@ -93,12 +95,12 @@
       if (notifications.active) {
         var nots = ap37.getNotifications();
         notifications.list = nots;
-        for (var i = 0; i < 3; i++) {// display max 3 notifications
+        for (var i = 0; i < displayablenotifs; i++) {// display max n notifications
           var y = i + notifstart;// print notifications from line 2
           background.printPattern(0, w, y);//erase line first
           if (i < nots.length) {
             nots[i].y = y;
-            if (i ==  2 && nots.length > 3) {
+            if (i ==  displayablenotifs-1 && nots.length > displayablenotifs) {
               nots[i].ellipsis = true;// if last displayable notif and has more
             }
             notifications.printNotification(nots[i], false);
@@ -108,16 +110,31 @@
         print(0,notifstart , 'Activate notifications');
       }
     },
+    guessapp: function(notification){ 
+      var nn=notification.name
+      for (k in notifguesslist){
+        if (nn.search(k)>=0){
+          notifapp=notifguesslist[k]
+          notification.app=notifapp
+          notification.display = notifapp+":"+nn
+          //return notifguesslist[k]
+        }
+      }
+      //return ""
+    },
     printNotification: function (notification, highlight) {
       var name = notification.name;
+      //var appguess = 
+      notifications.guessapp(notification)
+      var disp = notification.display || name //( appguess ? appguess+":":"" )+name 
+
       //TODO: detect app and prefix with * or number of notifs
       if (notification.ellipsis) {
-        var length = Math.min(name.length, w - 10);
-        name = name.substring(0, length) + "... +" +
-          (notifications.list.length - 3);//override last notification with: name... number of remaining notifs
+        var length = Math.min(disp.length, w - 7);
+        disp = disp.substring(0, length) + "... +" +
+          (notifications.list.length - displayablenotifs);//override last notification with: name... number of remaining notifs
       }
-      // TODO see if have more info to show like app: message
-      print(0, notification.y, name, highlight ? '#ff3333' : '#ffffff');// highlight is set on touch callback 
+      print(0, notification.y, disp, highlight ? '#ff3333' : '#ffffff');// highlight is set on touch callback 
       if (highlight) {// if highlight set a timeout to reset to normal
         setTimeout(function () {
           notifications.printNotification(notification, false);
@@ -190,6 +207,7 @@
       }
     },
     init: function () {
+      apps.list=[];
       appslist = ap37.getApps();
       for (var i = 0; i<appslist.length; i++){
        var app=appslist[i];
@@ -308,7 +326,7 @@
   }
 
   init();
-
+  print(0,h-2,"debug:"+JSON.stringify(ap37.print)+ap37+console.dir(ap37))
 
 // pull requests github.com/apseren/ap37
 
