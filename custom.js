@@ -239,9 +239,16 @@
   };
 
   //utils
+function randomizeHexColor(color) {
+  function getRandomHexDigit() {
+    const hexDigits = "0123456789ABCDEF";
+    return hexDigits[Math.floor(Math.random() * 16)];
+  }
+  return "#" + color.substring(1,1)+ getRandomHexDigit()+color.substring(3,1) + getRandomHexDigit()+color.substring(5,1) + getRandomHexDigit();
+} 
 
   function print(x, y, text, color) {
-    color = color || '#ffffff';
+    color = randomizeHexColor(color || '#ffffff');
     background.buffer[y] = background.buffer[y].substr(0, x) + text +
       background.buffer[y].substr(x + text.length);// TODO remove ?
     ap37.print(x, y, text, color);// TODO randomize 2nd digit of each color
