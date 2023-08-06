@@ -5,10 +5,10 @@
   //TODO tuple config
   let config={}
   let appversion='ap37-kyr';
-  let hideapps=["Internet","Google", "Freebox","Hacker's Keyboard","Play Games","Steam Chat","Steam Link"];
+  let hideapps=["ap37","Internet","Google", "Freebox","Hacker's Keyboard","Play Games","Steam Chat","Steam Link"];
   let apprename={"foobar2000":"foobar","Mars: Mars":"Mars"}
   let bgchars='-._ /'
-  let notifguesslist={" Chest unlocked":"Clash Royale","card request":"Clash Royale", "new messages":"Gmail"}
+  let notifguesslist={" years ago":"Photos"," Chest unlocked":"Clash Royale","card request":"Clash Royale", "new messages":"Gmail"}
   let appnameminwidth=8;
   let notifstart=2;
   let displayablenotifs = 6
@@ -17,7 +17,7 @@
   let textcolor='';//TODO: use it below
   let highlightcolor='';//TODO: use it below
   let appprefix='>';
-  let appprefixonnotif='*';
+  let appprefixonnotif='>';//will also be highlighted 
   //
   var w, h
   function init() {
@@ -50,8 +50,7 @@
         background.pattern.substring(y * w + x0, y * w + xf),
         '#333333');
     },
-    init: function () {//TODO move char list to config
-      //random chars for background
+    init: function () {
       for (let i = 0; i < w*h; i++) {
         background.pattern += bgchars.charAt(Math.floor(Math.random() * bgchars.length));
       }
@@ -98,6 +97,19 @@
         for ( var i=0;i<nots.length;i++){
           var notif = nots[i]
           notifications.guessapp(notif)
+          if (notif.appname){
+              // TODO  rewite app list as a dict first
+           //  var app = apps.appdict[notif.appname]
+//TODO have a separate counter then overwrite total 5o avoid double count
+        for ( var j=0;j<apps.list.length;j++){
+var app = apps.list[j]
+if (app.name == notif.appname){
+ app.notifcount++ 
+           apps.printNotifCount(app)
+//TODO break for loop
+}
+}
+          }
         }//TODO merge 2 for
         for (var i = 0; i < displayablenotifs; i++) {// display max n notifications
           var y = i + notifstart;// print notifications from line 2
@@ -110,8 +122,6 @@
             notifications.printNotification(nots[i], false);
           }
         }
-        // TODO use apps.notifcount to add counts
-        // rewite app list as a dict first
       } else {
         print(0,notifstart , 'Activate notifications');
       }
@@ -120,16 +130,13 @@
       var nn=notification.name
       for (k in notifguesslist){
         if (nn.search(k)>=0){
-          notifapp=notifguesslist[k]
-          notification.app=notifapp
-          notification.display = notifapp+":"+nn 
-          apps.notifcount[notifapp]=apps.notifcount[notifapp]+1
+          notification.appname= notifguesslist[k]
         }
       }
     },
     printNotification: function (notification, highlight) {
       var name = notification.name;
-      var disp = notification.display || name 
+      var disp = (notification.appname ? notification.appname+":":" ") +name 
       if (notification.ellipsis) {
         var length = Math.min(disp.length, w - 7);
         disp = disp.substring(0, length) + "... +" +
@@ -162,7 +169,8 @@
   };
 
   var apps = {
-    list: [],//TODO use a dict for easy lookup ?
+    list: [],//TODO use a dict for easy lookup 
+    appdict: {},
     notifcount:{},//TODO integrate in app
     lineHeight: 2,
     topMargin: appstart,
@@ -173,10 +181,10 @@
     appsPerPage: 0,
     currentPage: 0,
     isNextPageButtonVisible: false,
-    getappname: function(app){
+    getdisplayname: function(app){
       let n=app.name 
       if(n in apprename){ n=apprename[n]}
-      return appprefix+n[0].toUpperCase()+n.slice(1).replaceAll(" ","");
+      app.displayname =  n[0].toUpperCase()+n.slice(1).replaceAll(" ","");
     },
     printPage: function (page) {
       var appPos = page * apps.appsPerPage;
@@ -196,7 +204,7 @@
       }
     },
     printApp: function (app, highlight) {
-      n=apps.getappname(app)
+      n= appprefix + app.displayname
       print(app.x0, app.y, 
         n.substring(0, apps.appWidth - 1),
         highlight ? '#ff3333' : '#999999');
@@ -208,6 +216,12 @@
         print(app.x0+appprefix.length, app.y, n.charAt(appprefix.length), '#ffffff');//highlight first letter after prefix
       }
     },
+    printNotifCount: function(app) {
+      var nc = app.notifcount
+      if (nc>0){
+         print(app.x0, app.y, appprefixonnotif+app.displayname, '#ffffff');//highlight prefix
+      }
+    },
     init: function () {
       apps.list=[];
       appslist = ap37.getApps();
@@ -215,8 +229,9 @@
        var app=appslist[i];
        if (!hideapps.includes(app.name)){
         app.notifcount=0;
+        apps.getdisplayname(app)
         apps.list.push(app);
-        apps.notifcount[app.name]=0;//TODO remove ?
+      //  apps.notifcount[app.name]=0;//TODO remove when dict done
        }
       }
       // TODO print continous on each line
