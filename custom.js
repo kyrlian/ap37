@@ -157,7 +157,7 @@
     getappname: function(app){
       let n=app.name 
       if(n in apprename){ n=apprename[n]}
-      return appprefix+n.replaceAll(" ","");
+      return appprefix+n[0].toUpperCase()+n.slice(1).replaceAll(" ","");
     },
     printPage: function (page) {
       var appPos = page * apps.appsPerPage;
