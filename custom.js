@@ -155,8 +155,9 @@
     currentPage: 0,
     isNextPageButtonVisible: false,
     getappname: function(app){
-      //if(apprename.includes(app.name
-      return app.name;//TODO remove spaces, replaceappname, use below
+      let n=app.name 
+      if(n in apprename){ n=apprename[n]}
+      return n.replace(" ","");//TODO use below
     },
     printPage: function (page) {
       var appPos = page * apps.appsPerPage;
@@ -176,15 +177,16 @@
       }
     },
     printApp: function (app, highlight) {
+      n=apps.getappname(app)
       print(app.x0, app.y, 
-        app.name.substring(0, apps.appWidth - 1),
+        n.substring(0, apps.appWidth - 1),
         highlight ? '#ff3333' : '#999999');//TODO add app prefix and -1-appprefix.length
       if (highlight) {
         setTimeout(function () {
           apps.printApp(app, false);
         }, 1000);
       } else {
-        print(app.x0, app.y, app.name.substring(0, 1), '#ffffff');//highlight first letter - TODO shift+ appprefix.length
+        print(app.x0, app.y, n.substring(0, 1), '#ffffff');//highlight first letter - TODO shift+ appprefix.length
       }
     },
     init: function () {
@@ -244,12 +246,22 @@
   };
 
   //utils
+  hexchars="0123456789abcdef";
   function randomizeHexColor(c) {
     function rndhex() {
-      return "0123456789abcdef".charAt(Math.floor(Math.random() * 16));
+      return hexchars.charAt(Math.floor(Math.random() * 16));
     }
-    //TODO for each digit go up/dowm by 1
-    return "#" + c.charAt(1)+ rndhex()+c.charAt(3) + rndhex()+c.charAt(5) + rndhex();
+    function shift(h){//for each digit go up/dowm by 1
+      let i=hexchars.indexOf(h); 
+      let s=Math.max(0,Math.min(15,i+Math.floor(Math.random()*3)-1))
+      return hexchars[s]
+    }
+    let r="#"
+    for (let j=0;j<6;j++){
+     r=r+shift(c.charAt(j))
+    }
+    return r
+    //return "#" + c.charAt(1)+ rndhex()+c.charAt(3) + rndhex()+c.charAt(5) + rndhex();
     //return "#" + rndhex()+ rndhex()+c.charAt(3) + rndhex()+c.charAt(5) + rndhex();
   }
 
@@ -257,7 +269,7 @@
     let rcolor =  randomizeHexColor(color || '#ffffff');
     background.buffer[y] = background.buffer[y].substr(0, x) + text +
       background.buffer[y].substr(x + text.length);// TODO remove ?
-    ap37.print(x, y, text, rcolor);// TODO randomize 2nd digit of each color
+    ap37.print(x, y, text, rcolor);
   }
 
   function get(url, callback) {
