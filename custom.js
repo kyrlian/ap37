@@ -9,11 +9,6 @@
    appdisplayname:{"foobar2000":"foobar","Mars: Mars":"Mars","Coding Python" : "Python",   "Freebox Connect" : "Freebox","G7 Taxi" : "G7","Keep Notes" : "Keep","Linux Command Library" : "Linux Command","Mandel Browser" : "Mandelbrot","Picturesaurus for Reddit" : "Picturesaurus","Simple Text Editor" : "TextEdit","SNCF Connect" : "SNCF"},
    notifguesslist:{"Bing":"Bing","photos auto-added":"Photos"," years ago":"Photos"," Chest unlocked":"Clash Royale","card request":"Clash Royale", "new messages":"Gmail"},
    appnameminwidth:8,//for grid display
-   zonenotifstart:2,
-   displayablenotifs : 6,
-   zoneappstart : 2 + 6 + 1,
-   zonefooterheight : 6,
-   zonepaginationstart : 0,//will be calculated
    bgchars:'-._ /',
    bgcolor:'#333333',
    textcolordim:'#999999',
@@ -24,47 +19,28 @@
    appdisplaymode:'grid',//grid or text
   }
   //
-  var w, h
+  var w = ap37.getScreenWidth();
+  var h = ap37.getScreenHeight();
   function init() {
     ap37.setTextSize(13);
     w = ap37.getScreenWidth();
     h = ap37.getScreenHeight();
-    config.zonepaginationstart = h - config.zonefooterheight;
     background.init();
-    print(3, h-1, config.appversion);//bottom left
-    time.init();
-    battery.init();
-    meteo.init()
-    apps.init();
+    header.init();
+    apps.init();// do apps before notifications
     notifications.init();
     favorites.init();
-    settings.init()
+    footer.init();
     ap37.setOnTouchListener(function (x, y) {
-      meteo.onTouch(x, y);
+      header.onTouch(x, y);
       apps.onTouch(x, y);
       notifications.onTouch(x, y);
       favorites.onTouch(x, y);
-      settings.onTouch(x,y);
+      footer.onTouch(x,y);
     });
   }
 
   // modules
-
-  var settings = {
-    init: function () {
-      settings.update();
-    },
-    update: function () {
-      print(w - 5, h - 1, config.appdisplaymode.toUpperCase());
-    },
-    onTouch: function (x, y) {
-      if (x >= w-5 && y >= h-1){
-        config.appdisplaymode = (config.appdisplaymode=='grid') ? 'text' : 'grid';//grid or text
-        apps.init();
-        settings.update();
-      }
-    }
-  };
 
   var background = {
     randomline: function(nbc){
@@ -85,6 +61,22 @@
       ap37.printLines(buffer, config.bgcolor);
     }
   };
+  
+  var header = {
+    heigth:2,
+    top:0,
+    bottom:2,
+    init: function () {
+      time.init();
+      battery.init();
+      meteo.init()
+    },
+    onTouch: function (x, y) {
+      if(y==header.top){
+        meteo.onTouch(x,y);
+      }
+    },
+  };
 
   var time = {
     update: function () {
@@ -92,17 +84,20 @@
       var time = d.year +
         leftPad(d.month, 2, '0') + leftPad(d.day, 2, '0') + ' ' +
         leftPad(d.hour, 2, '0') + leftPad(d.minute, 2, '0');
-      print(3, 0, time);
+      print(3, header.top, time);
     },
     init: function () {
       time.update();
       setInterval(time.update, 60000);
+    },
+    onTouch: function (x, y) {
+      // TODO open clock app
     }
   };
 
   var battery = {
     update: function () {
-      print(w - 6, 0,
+      print(w - 6, header.top,
         leftPad(ap37.getBatteryLevel(), 3, ' ')+'%');
     },
     init: function () {
@@ -111,7 +106,38 @@
     }
   };
 
+  var meteo = {//TODO stub meteo
+    url:"https://api.open-meteo.com/v1/forecast?latitude=52.52&longitude=13.41&current_weather=true&forecast_days=1",
+    init: function () {
+      meteo.update();
+      setInterval(meteo.update, 3600000);//1h
+    },
+    update: function () {
+       // todo update temp
+    },
+    onTouch: function (x, y) {// todo open meteo app
+    }
+  };
+
+  var footer = {
+    heigth:1,
+    top:h-1,
+    bottom:h,
+    init: function () {
+      print(3, footer.top, config.appversion);//bottom left
+      settings.init()
+    },
+    onTouch: function (x, y) {
+      if(y == footer.top){
+        settings.onTouch(x,y);
+      }
+    }
+  };
+
   var notifications = {
+    heigth:6,
+    top:header.bottom,
+    bottom:header.bottom+6,
     list: [],
     active: false,
     guessapp: function (notification) { 
@@ -147,19 +173,19 @@
               apps.printNotifCount(app)
           }
         }
-        for (var i = 0; i < config.displayablenotifs ; i++) {// display max n notifications
-          var y = i + config.zonenotifstart;// print notifications from line 2
+        for (var i = 0; i < notifications.height; i++) {// display max n notifications
+          var y = i + notifications.top;// print notifications from line 2
           background.printPattern(0, w, y);//erase line first
           if (i < nots.length) {
             nots[i].y = y;
-            if (i ==  config.displayablenotifs-1 && nots.length > config.displayablenotifs) {
+            if (i ==  notifications.height -1 && nots.length > notifications.height) {
               nots[i].ellipsis = true;// if last displayable notif and has more
             }
             notifications.printNotification(nots[i], false);
           }
         }
       } else {
-        print(0,config.zonenotifstart , 'Activate notifications');
+        print(0, notifications.top, 'Activate notifications');
       }
     },
     printNotification: function (notification, highlight) {
@@ -168,7 +194,7 @@
       if (notification.ellipsis) {
         var length = Math.min(disp.length, w - 7);
         disp = disp.substring(0, length) + "... +" +
-          (notifications.list.length - config.displayablenotifs);//override last notification with: name... number of remaining notifs
+          (notifications.list.length -  notifications.height); //last notification with: name... number of remaining notifs
       }
       print(0, notification.y, disp, highlight ? config.highlightcolor : config.textcolorbright);// highlight is set on touch callback 
       if (highlight) {// if highlight set a timeout to reset to normal
@@ -190,13 +216,29 @@
             return;
           }
         }
-      } else if (y === config.zonenotifstart) {// permission request alert on line  3
+      } else if (y === notifications.top ) {// permission request alert on line  3
         ap37.requestNotificationsPermission();
       }
     }
   };
 
+  var favorites = {
+    heigth:2,
+    top:footer.top-2,
+    bottom:footer.top,
+    init: function () {
+      //TODO display favoriteapps on a single line
+    },
+    update: function () {
+    },
+    onTouch: function (x, y) {
+    }
+  };
+
   var apps = {
+    heigth:favorites.top - notifications.bottom,
+    top:notifications.bottom,
+    bottom:favorites.top,
     list: [],
     pagefirstappnum: {0 : 0},
     lineHeight: 2,
@@ -214,8 +256,7 @@
     printPageGrid: function (page) {
       var appPos = page * apps.appsPerPage;
       for (var x = 0; x + apps.appWidth <= w; x += apps.appWidth) {
-        for (var y = config.zoneappstart; y < config.zoneappstart + apps.lines *
-        apps.lineHeight; y += apps.lineHeight) {
+        for (var y = apps.top; y < apps.bottom; y += apps.lineHeight) {
           background.printPattern(x, x + apps.appWidth, y);
           if (appPos < apps.list.length) {
             var app = apps.list[appPos];
@@ -231,22 +272,22 @@
     printPageText: function (page) {
       let appnum = apps.pagefirstappnum[page];
       let x = 0;
-      let y = config.zoneappstart;
+      let y = apps.top;
       background.printPattern(0, w, y);
-      while(y < config.zonepaginationstart && appnum < apps.list.length){
+      while(y < apps.bottom && appnum < apps.list.length){
         let app = apps.list[appnum];
         let xf = x + (config.appprefix + app.displayname).length;
         if (xf > w){//if out of row
           x=0;
           y+=2;//keep a blank line between rows
-          if(y>=config.zonepaginationstart){//out of screen
+          if(y>= apps.bottom ){//out of screen
             apps.pagefirstappnum[page+1]=appnum;
             apps.pagination(true);// and activate pagination
           }else{
             background.printPattern(0, w, y);
           }
         }
-        if(y < config.zonepaginationstart){
+        if(y < apps.bottom){
           app.x0 = x;
           app.y = y;
           app.xf = x + (config.appprefix + app.displayname).length;
@@ -255,19 +296,20 @@
           appnum++;
         }
       }
-      if(page==0 && y < config.zonepaginationstart){
+      if(page==0 && y < apps.bottom ){
         apps.pagination(false);// deactivate pagination
       }
-      for(let j=y;j<config.zonepaginationstart;j++){
+      for(let j=y;j< apps.bottom ;j++){
         background.printPattern(0, w, j);//erase rest of the zone
       }
     },
     printApp: function (app, highlight) {
       let display = config.appprefix + app.displayname
-      if(config.appdisplaymode=='grid'){//grid mode
+      if(config.appdisplaymode == 'grid'){//grid mode
         display =  display.substring(0, apps.appWidth - 1)
       }
       print(app.x0, app.y, display, highlight ? config.highlightcolor : config.textcolordim);
+      apps.printNotifCount(app);
       if (highlight) {
         setTimeout(function () {
           apps.printApp(app, false);
@@ -284,10 +326,10 @@
     pagination: function (onoff) {
       if(onoff){
         apps.isNextPageButtonVisible = true;// and activate pagination
-        print(w - 4, config.zonepaginationstart, '>>>');
+        print(w - 4, apps.bottom, '>>>');
       } else {
         apps.isNextPageButtonVisible = false;
-        background.printPattern(w - 4, w, config.zonepaginationstart);// erase pagination >>>
+        background.printPattern(w - 4, w, apps.bottom);// erase pagination >>>
       }
     },
     init: function () {
@@ -302,11 +344,15 @@
        }
       }
       apps.currentPage = 0;
-      if(config.appdisplaymode=='grid'){//grid mode
-        apps.lines = Math.floor((config.zonepaginationstart - config.zoneappstart ) / apps.lineHeight);
+      apps.lines = Math.floor( apps.heigth / apps.lineHeight);
+      apps.update();
+      ap37.setOnAppsListener(apps.init);// reset app list callback
+    },
+    update: function() {
+      if(config.appdisplaymode=='grid'){//grid
+        // check minimum app name length
         apps.appsPerLine = Math.ceil(apps.list.length / apps.lines);
         apps.appWidth = Math.floor(w / apps.appsPerLine);
-        // check minimum app name length
         if (apps.appWidth < config.appnameminwidth) {//if available app width is too small
           apps.appWidth = config.appnameminwidth;// force
           apps.appsPerLine = Math.floor(w / apps.appWidth);
@@ -314,16 +360,14 @@
         } else {
           apps.pagination(false);
         }
-        apps.appsPerPage = apps.lines * apps.appsPerLine;
+        apps.appsPerPage = apps.lines * apps.appsPerLine
         apps.printPageGrid(apps.currentPage);
-      }else{//text mode
+      } else {//text mode
         apps.printPageText(apps.currentPage);
       }
-      ap37.setOnAppsListener(apps.init);// reset app list callback
     },
     onTouch: function (x, y) {
-      for (var i = apps.currentPage * apps.appsPerPage; i <
-      apps.list.length; i++) {
+      for (var i = apps.currentPage * apps.appsPerPage; i < apps.list.length; i++) {
         var app = apps.list[i];
         if (y >= app.y && y <= app.y + 1 &&
           x >= app.x0 && x <= app.xf) {
@@ -338,7 +382,7 @@
           if (apps.currentPage * apps.appsPerPage >= apps.list.length) {
             apps.currentPage = 0;
           }
-          apps.printPageGrid(apps.currentPage);
+          apps.printPageGrid(apps.currentPage);// TODO simplify with single update func
         }else{//text mode
           if (!(apps.currentPage in apps.pagefirstappnum)){
             apps.currentPage = 0;
@@ -349,19 +393,21 @@
     }
   };
 
-  var meteo = {//TODO stub meteo
-    url:"https://api.open-meteo.com/v1/forecast?latitude=52.52&longitude=13.41&current_weather=true&forecast_days=1",
-    init: function () {},
-    update: function () {},
-    onTouch: function (x, y) {}
-  };
 
-  var favorites = {
+  var settings = {
     init: function () {
-      //TODO display favoriteapps on a single line
+      settings.update();
     },
-    update: function () {},
-    onTouch: function (x, y) {}
+    update: function () {
+      print(w - 5, footer.top, config.appdisplaymode.toUpperCase());
+    },
+    onTouch: function (x, y) {
+      if (x >= w-5 && y >= footer.top){
+        config.appdisplaymode = (config.appdisplaymode=='grid') ? 'text' : 'grid';//grid or text
+        apps.update();
+        settings.update();
+      }
+    }
   };
 
   //utils
@@ -427,4 +473,3 @@
   
 // pull requests github.com/kyrlian/ap37
 // pull requests github.com/apseren/ap37
-
