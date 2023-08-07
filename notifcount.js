@@ -93,21 +93,21 @@
           var nots = ap37.getNotifications();
           notifications.list = nots;
           // count notification per app
-          var notificationcounter={}
+          var notificationcounter={};
           for (var i=0;i<nots.length;i++){
-            var notification = nots[i]
-            notifications.guessapp(notification)
+            var notification = nots[i];
+            notifications.guessapp(notification);
             if (notification.appname){
               if (notification.appname in notificationcounter){
-                notificationcounter[notification.appname] = notificationcounter[notification.appname] +1
+                notificationcounter[notification.appname] = notificationcounter[notification.appname] + 1;
               }else{
-                notificationcounter[notification.appname] = 1
+                notificationcounter[notification.appname] = 1;
               }
             }
           }
           // update notif counter on apps with notifications
           for ( var j=0;j<apps.list.length;j++){
-            var app = apps.list[j]
+            var app = apps.list[j];
             if (app.name in notificationcounter){
                 print(app.x0, app.y, notificationcounter[app.name] + app.name.substring(0, apps.appWidth - 2), '#ffffff');
             }
