@@ -93,7 +93,7 @@
           var nots = ap37.getNotifications();
           notifications.list = nots;
           // count notification per app
-          notificationcounter={}
+          var notificationcounter={}
           for (var i=0;i<nots.length;i++){
             var notification = nots[i]
             notifications.guessapp(notification)
