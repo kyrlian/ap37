@@ -5,15 +5,16 @@
   const config={
    appversion:'ap37-kyr',
    hideapps:["ap37","Internet","Google", "Freebox","Hacker's Keyboard","Play Games","Steam Chat","Steam Link"],
-   appdisplayname:{"foobar2000":"foobar","Mars: Mars":"Mars"},
-   bgchars:'-._ /',
+   favoriteapps:["Phone","Signal","Gmail","Maps","Camera"],
+   appdisplayname:{"foobar2000":"foobar","Mars: Mars":"Mars","Coding Python" : "Python",   "Freebox Connect" : "Freebox","G7 Taxi" : "G7","Keep Notes" : "Keep","Linux Command Library" : "Linux Command","Mandel Browser" : "Mandelbrot","Picturesaurus for Reddit" : "Picturesaurus","Simple Text Editor" : "TextEdit","SNCF Connect" : "SNCF"},
    notifguesslist:{"Bing":"Bing","photos auto-added":"Photos"," years ago":"Photos"," Chest unlocked":"Clash Royale","card request":"Clash Royale", "new messages":"Gmail"},
-   appnameminwidth:8,
+   appnameminwidth:8,//for grid display
    zonenotifstart:2,
    displayablenotifs : 6,
    zoneappstart : 2 + 6 + 1,
    zonefooterheight : 6,
    zonepaginationstart : 0,//will be calculated
+   bgchars:'-._ /',
    bgcolor:'#333333',
    textcolordim:'#999999',
    textcolorbright:'#ffffff',
@@ -33,12 +34,16 @@
     print(3, h-1, config.appversion);//bottom left
     time.init();
     battery.init();
+    meteo.init()
     apps.init();
     notifications.init();
+    favorites.init();
     settings.init()
     ap37.setOnTouchListener(function (x, y) {
-      notifications.onTouch(x, y);
+      meteo.onTouch(x, y);
       apps.onTouch(x, y);
+      notifications.onTouch(x, y);
+      favorites.onTouch(x, y);
       settings.onTouch(x,y);
     });
   }
@@ -47,11 +52,16 @@
 
   var settings = {
     init: function () {
-      print(w - 5, h - 1, 'EOF');
+      settings.update();
+    },
+    update: function () {
+      print(w - 5, h - 1, config.appdisplaymode.toUpperCase());
     },
     onTouch: function (x, y) {
-      if (x>=h-1 && y>=w-5){
+      if (x >= w-5 && y >= h-1){
         config.appdisplaymode = (config.appdisplaymode=='grid') ? 'text' : 'grid';//grid or text
+        apps.init();
+        settings.update();
       }
     }
   };
@@ -222,7 +232,7 @@
       let appnum = apps.pagefirstappnum[page];
       let x = 0;
       let y = config.zoneappstart;
-      background.printPattern(x, w, y);
+      background.printPattern(0, w, y);
       while(y < config.zonepaginationstart && appnum < apps.list.length){
         let app = apps.list[appnum];
         let xf = x + (config.appprefix + app.displayname).length;
@@ -233,7 +243,7 @@
             apps.pagefirstappnum[page+1]=appnum;
             apps.pagination(true);// and activate pagination
           }else{
-            background.printPattern(x, w, y);
+            background.printPattern(0, w, y);
           }
         }
         if(y < config.zonepaginationstart){
@@ -249,7 +259,7 @@
         apps.pagination(false);// deactivate pagination
       }
       for(let j=y;j<config.zonepaginationstart;j++){
-        background.printPattern(x, w, j);//erase rest of the zone
+        background.printPattern(0, w, j);//erase rest of the zone
       }
     },
     printApp: function (app, highlight) {
@@ -339,9 +349,19 @@
     }
   };
 
-  var meteo ={//TODO stub meteo
-    url:"https://api.open-meteo.com/v1/forecast?latitude=52.52&longitude=13.41&current_weather=true&forecast_days=1"
-   // url:"https://api.open-meteo.com/v1/forecast?latitude=48.8534&longitude=2.3488&hourly=apparent_temperature&forecast_days=1"
+  var meteo = {//TODO stub meteo
+    url:"https://api.open-meteo.com/v1/forecast?latitude=52.52&longitude=13.41&current_weather=true&forecast_days=1",
+    init: function () {},
+    update: function () {},
+    onTouch: function (x, y) {}
+  };
+
+  var favorites = {
+    init: function () {
+      //TODO display favoriteapps on a single line
+    },
+    update: function () {},
+    onTouch: function (x, y) {}
   };
 
   //utils
