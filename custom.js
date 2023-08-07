@@ -254,7 +254,8 @@
   var apps = {
     heigth: favorites.top - 1 - notifications.bottom,
     top: notifications.bottom,
-    bottom: favorites.top - 1,//keep 1 because we use bottom line for pagination    list: [],
+    bottom: favorites.top - 1, //keep 1 because we use bottom line for pagination    
+    list: [],
     pagefirstappnum: {0 : 0},
     lineHeight: 2,
     lines: 0,
@@ -393,17 +394,11 @@
       }
       if (apps.isNextPageButtonVisible && y == config.zonepaginationstart && x >= w - 4 ) {
         apps.currentPage++;
-        if(config.appdisplaymode=='grid'){//grid mode
-          if (apps.currentPage * apps.appsPerPage >= apps.list.length) {
+        if((config.appdisplaymode=='grid' && apps.currentPage * apps.appsPerPage >= apps.list.length) ||
+         (config.appdisplaymode=='text' && !(apps.currentPage in apps.pagefirstappnum))){
             apps.currentPage = 0;
-          }
-          apps.printPageGrid(apps.currentPage);// TODO simplify with single update func
-        }else{//text mode
-          if (!(apps.currentPage in apps.pagefirstappnum)){
-            apps.currentPage = 0;
-          }
-          apps.printPageText(apps.currentPage);
         }
+        apps.update();
       }
     }
   };
