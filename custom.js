@@ -19,12 +19,10 @@
    appdisplaymode:'grid',//grid or text
   }
   //
+  ap37.setTextSize(13);
   var w = ap37.getScreenWidth();
   var h = ap37.getScreenHeight();
   function init() {
-    ap37.setTextSize(13);
-    w = ap37.getScreenWidth();
-    h = ap37.getScreenHeight();
     background.init();
     header.init();
     apps.init();// do apps before notifications
@@ -134,10 +132,28 @@
     }
   };
 
+
+  var settings = {
+    init: function () {
+      settings.update();
+    },
+    update: function () {
+      print(w - 5, footer.top, config.appdisplaymode.toUpperCase());
+    },
+    onTouch: function (x, y) {
+      if (x >= w-5 && y >= footer.top){
+        config.appdisplaymode = (config.appdisplaymode=='grid') ? 'text' : 'grid';//grid or text
+        apps.update();
+        settings.update();
+      }
+    }
+  };
+
+
   var notifications = {
     heigth:6,
-    top:header.bottom,
-    bottom:header.bottom+6,
+    top: header.bottom,
+    bottom: header.bottom+6,
     list: [],
     active: false,
     guessapp: function (notification) { 
@@ -173,7 +189,7 @@
               apps.printNotifCount(app)
           }
         }
-        for (var i = 0; i < notifications.height; i++) {// display max n notifications
+        for (var i = 0; i < notifications.heigth; i++) {// display max n notifications
           var y = i + notifications.top;// print notifications from line 2
           background.printPattern(0, w, y);//erase line first
           if (i < nots.length) {
@@ -223,9 +239,9 @@
   };
 
   var favorites = {
+    bottom: footer.top,
     heigth:2,
-    top:footer.top-2,
-    bottom:footer.top,
+    top: footer.top-2,
     init: function () {
       //TODO display favoriteapps on a single line
     },
@@ -236,10 +252,9 @@
   };
 
   var apps = {
-    heigth:favorites.top - notifications.bottom,
-    top:notifications.bottom,
-    bottom:favorites.top,
-    list: [],
+    heigth: favorites.top - 1 - notifications.bottom,
+    top: notifications.bottom,
+    bottom: favorites.top - 1,//keep 1 because we use bottom line for pagination    list: [],
     pagefirstappnum: {0 : 0},
     lineHeight: 2,
     lines: 0,
@@ -393,22 +408,6 @@
     }
   };
 
-
-  var settings = {
-    init: function () {
-      settings.update();
-    },
-    update: function () {
-      print(w - 5, footer.top, config.appdisplaymode.toUpperCase());
-    },
-    onTouch: function (x, y) {
-      if (x >= w-5 && y >= footer.top){
-        config.appdisplaymode = (config.appdisplaymode=='grid') ? 'text' : 'grid';//grid or text
-        apps.update();
-        settings.update();
-      }
-    }
-  };
 
   //utils
   const hexchars="0123456789abcdef";
