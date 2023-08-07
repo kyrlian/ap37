@@ -28,7 +28,7 @@
     ap37.setTextSize(13);
     w = ap37.getScreenWidth();
     h = ap37.getScreenHeight();
-    config.zonepaginationstart = h - confg.zonefooterheight;
+    config.zonepaginationstart = h - config.zonefooterheight;
     background.init();
     print(3, h-1, config.appversion);//bottom left
     time.init();
@@ -220,22 +220,23 @@
     },
     printPageText: function (page) {
       let appnum = apps.pagefirstappnum[page];
-      let fits = true;
       let x = 0;
       let y = config.zoneappstart;
-      while(fits && appnum < apps.list.length){
+      background.printPattern(x, w, y);
+      while(y < config.zonepaginationstart && appnum < apps.list.length){
         let app = apps.list[appnum];
         let xf = x + (config.appprefix + app.displayname).length;
         if (xf > w){//if out of row
           x=0;
           y+=2;//keep a blank line between rows
-          if(y>config.zonepaginationstart){//out of screen
-            fits=false;
+          if(y>=config.zonepaginationstart){//out of screen
             apps.pagefirstappnum[page+1]=appnum;
             apps.pagination(true);// and activate pagination
+          }else{
+            background.printPattern(x, w, y);
           }
         }
-        if(fits){
+        if(y < config.zonepaginationstart){
           app.x0 = x;
           app.y = y;
           app.xf = x + (config.appprefix + app.displayname).length;
@@ -244,8 +245,11 @@
           appnum++;
         }
       }
-      if(page==0 && fits){
+      if(page==0 && y < config.zonepaginationstart){
         apps.pagination(false);// deactivate pagination
+      }
+      for(let j=y;j<config.zonepaginationstart;j++){
+        background.printPattern(x, w, j);//erase rest of the zone
       }
     },
     printApp: function (app, highlight) {
@@ -270,10 +274,10 @@
     pagination: function (onoff) {
       if(onoff){
         apps.isNextPageButtonVisible = true;// and activate pagination
-        print(w - 4, zonepaginationstart, '>>>');
+        print(w - 4, config.zonepaginationstart, '>>>');
       } else {
         apps.isNextPageButtonVisible = false;
-        background.printPattern(w - 4, w, zonepaginationstart);// erase pagination >>>
+        background.printPattern(w - 4, w, config.zonepaginationstart);// erase pagination >>>
       }
     },
     init: function () {
@@ -318,7 +322,7 @@
           return;
         }
       }
-      if (apps.isNextPageButtonVisible && y == zonepaginationstart && x >= w - 4 ) {
+      if (apps.isNextPageButtonVisible && y == config.zonepaginationstart && x >= w - 4 ) {
         apps.currentPage++;
         if(config.appdisplaymode=='grid'){//grid mode
           if (apps.currentPage * apps.appsPerPage >= apps.list.length) {
