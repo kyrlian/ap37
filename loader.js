@@ -1,5 +1,5 @@
-branch='master';
-script='custom.js';
+branch='main';
+script='notifcount.js';
 url='https://raw.githubusercontent.com/kyrlian/ap37/'+branch+'/'+script;  
 var xhr = new XMLHttpRequest();
 xhr.open('GET', url, true);
