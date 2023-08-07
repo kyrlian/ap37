@@ -1,39 +1,38 @@
+(function script() {
   'use strict';
  
-
   // config
-  //TODO tuple config
-  let config={}
-  let appversion='ap37-kyr';
-  let hideapps=["ap37","Internet","Google", "Freebox","Hacker's Keyboard","Play Games","Steam Chat","Steam Link"];
-  let apprename={"foobar2000":"foobar","Mars: Mars":"Mars"}
-  let bgchars='-._ /'
-  let notifguesslist={" years ago":"Photos"," Chest unlocked":"Clash Royale","card request":"Clash Royale", "new messages":"Gmail"}
-  let appnameminwidth=8;
-  let notifstart=2;
-  let displayablenotifs = 6
-  let appstart = notifstart +displayablenotifs+1
-  let bgcolor='';//TODO: use it below
-  let textcolor='';//TODO: use it below
-  let highlightcolor='';//TODO: use it below
-  let appprefix='>';
-  let appprefixonnotif='>';//will also be highlighted 
+  const config={
+   appversion:'ap37-kyr',
+   hideapps:["ap37","Internet","Google", "Freebox","Hacker's Keyboard","Play Games","Steam Chat","Steam Link"],
+   appdisplayname:{"foobar2000":"foobar","Mars: Mars":"Mars"},
+   bgchars:'-._ /',
+   notifguesslist:{"Bing":"Bing","photos auto-added":"Photos"," years ago":"Photos"," Chest unlocked":"Clash Royale","card request":"Clash Royale", "new messages":"Gmail"};
+   appnameminwidth:8,
+   notifstart:2,
+   displayablenotifs : 6,
+   appstart : 2 + 6 + 1,
+   bgcolor:'#333333',
+   textcolordim:'#999999',
+   textcolorbright:'#ffffff',
+   highlightcolor='#ff3333',
+   appprefix:'>',
+   appprefixonnotif:'>',//will also be highlighted
+   appdisplaymode:'grid',//grid or text
+  }
   //
   var w, h
   function init() {
     ap37.setTextSize(13);
-
     w = ap37.getScreenWidth();
     h = ap37.getScreenHeight();
-
     background.init();
-    print(3, h-1, appversion);//bottom left
+    print(3, h-1, config.appversion);//bottom left
     time.init();
     battery.init();
-    apps.init()
+    apps.init();
     notifications.init();
     print(w - 5, h - 1, 'EOF');
-
     ap37.setOnTouchListener(function (x, y) {
       notifications.onTouch(x, y);
       apps.onTouch(x, y);
@@ -42,22 +41,23 @@
 
   // modules
 
-  var background = {//TODO no need to save, just regen as needed
-    buffer: [],
-    pattern: '',
-    printPattern: function (x0, xf, y) {
-      print(x0, y,
-        background.pattern.substring(y * w + x0, y * w + xf),
-        '#333333');
+  var background = {
+    randomline: function(nbc){
+      let line = "";
+      for (let i = 0; i < nbc; i++) {
+        line += config.bgchars.charAt(Math.floor(Math.random() * config.bgchars.length));
+      }
+      return line;
+    },
+    printPattern: function (x0, xf, y) {//redraw background for a single line
+      print(x0, y, background.randomline(xf), config.bgcolor);
     },
     init: function () {
-      for (let i = 0; i < w*h; i++) {
-        background.pattern += bgchars.charAt(Math.floor(Math.random() * bgchars.length));
-      }
+      let buffer = []
       for (var i = 0; i < h; i++) {
-        background.buffer.push(background.pattern.substr(i * w, w));
+        buffer.push(background.randomline(w));
       }
-      ap37.printLines(background.buffer, '#333333');
+      ap37.printLines(buffer, config.bgcolor);
     }
   };
 
@@ -89,49 +89,52 @@
   var notifications = {
     list: [],
     active: false,
+    guessapp: function (notification) { 
+      for (var k in config.notifguesslist){
+        if (notification.name.search(k)>=0){
+          notification.appname = config.notifguesslist[k]
+        }
+      }
+    },
     update: function () {
       notifications.active = ap37.notificationsActive();
       if (notifications.active) {
         var nots = ap37.getNotifications();
         notifications.list = nots; 
-        for ( var i=0;i<nots.length;i++){
-          var notif = nots[i]
-          notifications.guessapp(notif)
-          if (notif.appname){
-              // TODO  rewite app list as a dict first
-           //  var app = apps.appdict[notif.appname]
-//TODO have a separate counter then overwrite total 5o avoid double count
-        for ( var j=0;j<apps.list.length;j++){
-var app = apps.list[j]
-if (app.name == notif.appname){
- app.notifcount++ 
-           apps.printNotifCount(app)
-//TODO break for loop
-}
-}
+        // count notification per app
+        notificationcounter={}
+        for (var i=0;i<nots.length;i++){
+          var notification = nots[i]
+          notifications.guessapp(notification)
+          if (notification.appname){
+            if (notification.appname in notificationcounter){
+              notificationcounter[notification.appname] = notificationcounter[notification.appname] +1
+            }else{
+              notificationcounter[notification.appname] = 1
+            }
           }
-        }//TODO merge 2 for
-        for (var i = 0; i < displayablenotifs; i++) {// display max n notifications
-          var y = i + notifstart;// print notifications from line 2
+        }
+        // update notif counter on apps with notifications
+        for ( var j=0;j<apps.list.length;j++){
+          var app = apps.list[j]
+          if (app.name in notificationcounter){
+              app.notifcount = notificationcounter[app.name]
+              apps.printNotifCount(app)
+          }
+        }
+        for (var i = 0; i < config.displayablenotifs ; i++) {// display max n notifications
+          var y = i + config.notifstart;// print notifications from line 2
           background.printPattern(0, w, y);//erase line first
           if (i < nots.length) {
             nots[i].y = y;
-            if (i ==  displayablenotifs-1 && nots.length > displayablenotifs) {
+            if (i ==  config.displayablenotifs-1 && nots.length > config.displayablenotifs) {
               nots[i].ellipsis = true;// if last displayable notif and has more
             }
             notifications.printNotification(nots[i], false);
           }
         }
       } else {
-        print(0,notifstart , 'Activate notifications');
-      }
-    },
-    guessapp: function(notification){ 
-      var nn=notification.name
-      for (k in notifguesslist){
-        if (nn.search(k)>=0){
-          notification.appname= notifguesslist[k]
-        }
+        print(0,config.notifstart , 'Activate notifications');
       }
     },
     printNotification: function (notification, highlight) {
@@ -140,9 +143,9 @@ if (app.name == notif.appname){
       if (notification.ellipsis) {
         var length = Math.min(disp.length, w - 7);
         disp = disp.substring(0, length) + "... +" +
-          (notifications.list.length - displayablenotifs);//override last notification with: name... number of remaining notifs
+          (notifications.list.length - config.displayablenotifs);//override last notification with: name... number of remaining notifs
       }
-      print(0, notification.y, disp, highlight ? '#ff3333' : '#ffffff');// highlight is set on touch callback 
+      print(0, notification.y, disp, highlight ? config.highlightcolor : config.textcolorbright);// highlight is set on touch callback 
       if (highlight) {// if highlight set a timeout to reset to normal
         setTimeout(function () {
           notifications.printNotification(notification, false);
@@ -162,18 +165,17 @@ if (app.name == notif.appname){
             return;
           }
         }
-      } else if (y === notifstart) {// permission request alert on line  3
+      } else if (y === config.notifstart) {// permission request alert on line  3
         ap37.requestNotificationsPermission();
       }
     }
   };
 
   var apps = {
-    list: [],//TODO use a dict for easy lookup 
-    appdict: {},
-    notifcount:{},//TODO integrate in app
+    list: [],
+    pagefirstappnum: {0:0},
     lineHeight: 2,
-    topMargin: appstart,
+    topMargin: config.appstart,
     bottomMargin: 8,
     lines: 0,
     appWidth: 6,
@@ -183,10 +185,10 @@ if (app.name == notif.appname){
     isNextPageButtonVisible: false,
     getdisplayname: function(app){
       let n=app.name 
-      if(n in apprename){ n=apprename[n]}
+      if(n in config.appdisplayname){ n=config.appdisplayname[n]}
       app.displayname =  n[0].toUpperCase()+n.slice(1).replaceAll(" ","");
     },
-    printPage: function (page) {
+    printPageGrid: function (page) {
       var appPos = page * apps.appsPerPage;
       for (var x = 0; x + apps.appWidth <= w; x += apps.appWidth) {
         for (var y = apps.topMargin; y < apps.topMargin + apps.lines *
@@ -203,23 +205,62 @@ if (app.name == notif.appname){
         }
       }
     },
+    printPageText: function (page) {
+      let appnum = apps.pagefirstappnum[page];
+      let fits = true;
+      let x = 0;
+      let y = apps.topMargin;
+      while(fits){
+        let app = apps.list[appnum];
+        app.xf = x + (config.appprefix + app.displayname).length;
+        if (app.xf > w){//if out of row
+          x=0;
+          y++;
+          if(y>(h-apps.bottomMargin)){//out of screen
+            fits=false;
+            apps.pagefirstappnum[page+1]=appnum;
+            apps.pagination(true);// and activate pagination
+          }
+        }
+        if(fits){
+          app.x0 = x;
+          app.y = y;
+          app.xf = x + (config.appprefix + app.displayname).length;
+          apps.printApp(app, false);
+          appnum++;
+        }
+      }
+      if(page==0 && fits){
+        apps.pagination(false);// deactivate pagination
+      }
+    },
     printApp: function (app, highlight) {
-      n= appprefix + app.displayname
-      print(app.x0, app.y, 
-        n.substring(0, apps.appWidth - 1),
-        highlight ? '#ff3333' : '#999999');
+      let display = config.appprefix + app.displayname
+      if(config.appdisplaymode=='grid'){//grid mode
+        display =  display.substring(0, apps.appWidth - 1)
+      }
+      print(app.x0, app.y, display, highlight ? config.highlightcolor : config.textcolordim);
       if (highlight) {
         setTimeout(function () {
           apps.printApp(app, false);
         }, 1000);
       } else {
-        print(app.x0+appprefix.length, app.y, n.charAt(appprefix.length), '#ffffff');//highlight first letter after prefix
+        print(app.x0+config.appprefix.length, app.y, app.displayname[0], config.textcolorbright);//highlight first letter after prefix
       }
     },
     printNotifCount: function(app) {
-      var nc = app.notifcount
-      if (nc>0){
-         print(app.x0, app.y, appprefixonnotif+app.displayname, '#ffffff');//highlight prefix
+      if (app.notifcount > 0){
+         print(app.x0, app.y, config.appprefixonnotif + app.displayname, config.textcolorbright);//highlight prefix
+      }
+    },
+    pagination: function (onoff) {
+      if(onoff){
+        apps.isNextPageButtonVisible = true;// and activate pagination
+        print(w - 4, h - 9, '>>>');
+        print(w - 4, h - 8, '>>>');// TODO keep only one ?
+      } else {
+        apps.isNextPageButtonVisible = false;
+        background.printPattern(w - 4, w, h - 9);// erase pagination >>>
       }
     },
     init: function () {
@@ -227,36 +268,30 @@ if (app.name == notif.appname){
       appslist = ap37.getApps();
       for (var i = 0; i<appslist.length; i++){
        var app=appslist[i];
-       if (!hideapps.includes(app.name)){
+       if (!config.hideapps.includes(app.name)){
         app.notifcount=0;
         apps.getdisplayname(app)
         apps.list.push(app);
-      //  apps.notifcount[app.name]=0;//TODO remove when dict done
        }
       }
-      // TODO print continous on each line
-      apps.lines = Math.floor(
-        (h - apps.topMargin - apps.bottomMargin) / apps.lineHeight);
-      apps.appsPerLine = Math.ceil(apps.list.length / apps.lines);
-      apps.appWidth = Math.floor(w / apps.appsPerLine);
-
-      // check minimum app name length
-      if (apps.appWidth < appnameminwidth) {//if available app width is too small
-        apps.appWidth = appnameminwidth;// force
-        apps.appsPerLine = Math.floor(w / apps.appWidth);
-        apps.isNextPageButtonVisible = true;// and activate pagination
-        print(w - 4, h - 9, '>>>');
-        print(w - 4, h - 8, '>>>');// TODO keep only one
-      } else {
-        apps.isNextPageButtonVisible = false;
-        background.printPattern(w - 4, w, h - 9);// erase pagination >>>
-      }
-
-      apps.appsPerPage = apps.lines * apps.appsPerLine;
       apps.currentPage = 0;
-
-      apps.printPage(apps.currentPage);
-
+      if(config.appdisplaymode=='grid'){//grid mode
+        apps.lines = Math.floor((h - apps.topMargin - apps.bottomMargin) / apps.lineHeight);
+        apps.appsPerLine = Math.ceil(apps.list.length / apps.lines);
+        apps.appWidth = Math.floor(w / apps.appsPerLine);
+        // check minimum app name length
+        if (apps.appWidth < config.appnameminwidth) {//if available app width is too small
+          apps.appWidth = config.appnameminwidth;// force
+          apps.appsPerLine = Math.floor(w / apps.appWidth);
+          apps.pagination(true);// and activate pagination
+        } else {
+          apps.pagination(false);
+        }
+        apps.appsPerPage = apps.lines * apps.appsPerLine;
+        apps.printPageGrid(apps.currentPage);
+      }else{//text mode
+        apps.printPageText(apps.currentPage);
+      }
       ap37.setOnAppsListener(apps.init);// reset app list callback
     },
     onTouch: function (x, y) {
@@ -274,10 +309,17 @@ if (app.name == notif.appname){
         y >= h - 9 && y <= h - 8 &&
         x >= w - 4 && x <= w) {
         apps.currentPage++;
-        if (apps.currentPage * apps.appsPerPage >= apps.list.length) {
-          apps.currentPage = 0;
+        if(config.appdisplaymode=='grid'){//grid mode
+          if (apps.currentPage * apps.appsPerPage >= apps.list.length) {
+            apps.currentPage = 0;
+          }
+          apps.printPageGrid(apps.currentPage);
+        }else{//text mode
+          if (!(apps.currentPage in apps.pagefirstappnum)){
+            apps.currentPage = 0;
+          }
+          apps.printPageText(apps.currentPage);
         }
-        apps.printPage(apps.currentPage);
       }
     }
   };
@@ -307,9 +349,7 @@ if (app.name == notif.appname){
   }
 
   function print(x, y, text, color) {
-    let rcolor =  randomizeHexColor(color || '#eeeeee');
-    background.buffer[y] = background.buffer[y].substr(0, x) + text +
-      background.buffer[y].substr(x + text.length);// TODO remove ?
+    let rcolor =  color || config.textcolorbright;
     ap37.print(x, y, text, rcolor);
   }
 
@@ -344,8 +384,12 @@ if (app.name == notif.appname){
     return result;
   }
 
+  function debug(str){
+    print(0,h-2,str,'#ff3333')
+  }
   init();
-  //print(0,h-2,"debug:"+JSON.stringify(ap37.print)+ap37+console.dir(ap37))
-
+})();
+  
+// pull requests github.com/kyrlian/ap37
 // pull requests github.com/apseren/ap37
 
