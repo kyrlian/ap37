@@ -2,7 +2,7 @@
     'use strict';
     var w, h;
     
-    var notifguesslist={" years ago":"Photos"," Chest unlocked":"Clash Royale","card request":"Clash Royale", "new messages":"Gmail"};
+    var notifguesslist={"Bing":"Bing","photos auto-added":"Photos"," years ago":"Photos"," Chest unlocked":"Clash Royale","card request":"Clash Royale", "new messages":"Gmail"};
 
     function init() {
       ap37.setTextSize(11);
@@ -14,8 +14,8 @@
       print(0, 0, 'ap37-2a9f58c3');
       time.init();
       battery.init();
-      notifications.init();
       apps.init();
+      notifications.init();//init notifications after app for counter to work properly
       markets.init();
       transmissions.init();
       print(w - 3, h - 1, 'EOF');
@@ -81,7 +81,7 @@
       list: [],
       active: false,
       guessapp: function(notification){//guess app based on notification message
-        for (k in notifguesslist){
+        for (var k in notifguesslist){
           if (notification.name.search(k)>=0){
             notification.appname = notifguesslist[k];
           }
@@ -108,8 +108,8 @@
           // update notif counter on apps with notifications
           for ( var j=0;j<apps.list.length;j++){
             var app = apps.list[j]
-            if (app.name in notificationcount){
-                print(app.x0, app.y, notificationcount[app.name] + app.name.substring(0, apps.appWidth - 2), '#ffffff');
+            if (app.name in notificationcounter){
+                print(app.x0, app.y, notificationcounter[app.name] + app.name.substring(0, apps.appWidth - 2), '#ffffff');
             }
           }
           for (var i = 0; i < 3; i++) {
