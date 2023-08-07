@@ -1,7 +1,9 @@
 (function script() {
     'use strict';
     var w, h;
-  
+    
+    var notifguesslist={" years ago":"Photos"," Chest unlocked":"Clash Royale","card request":"Clash Royale", "new messages":"Gmail"};
+
     function init() {
       ap37.setTextSize(11);
   
@@ -78,11 +80,38 @@
     var notifications = {
       list: [],
       active: false,
+      guessapp: function(notification){//guess app based on notification message
+        for (k in notifguesslist){
+          if (notification.name.search(k)>=0){
+            notification.appname = notifguesslist[k];
+          }
+        }
+      },
       update: function () {
         notifications.active = ap37.notificationsActive();
         if (notifications.active) {
           var nots = ap37.getNotifications();
           notifications.list = nots;
+          // count notification per app
+          notificationcounter={}
+          for (var i=0;i<nots.length;i++){
+            var notification = nots[i]
+            notifications.guessapp(notification)
+            if (notification.appname){
+              if (notification.appname in notificationcounter){
+                notificationcounter[notification.appname] = notificationcounter[notification.appname] +1
+              }else{
+                notificationcounter[notification.appname] = 1
+              }
+            }
+          }
+          // update notif counter on apps with notifications
+          for ( var j=0;j<apps.list.length;j++){
+            var app = apps.list[j]
+            if (app.name in notificationcount){
+                print(app.x0, app.y, notificationcount[app.name] + app.name.substring(0, apps.appWidth - 2), '#ffffff');
+            }
+          }
           for (var i = 0; i < 3; i++) {
             var y = i + 2;
             background.printPattern(0, w, y);
