@@ -7,15 +7,17 @@
    hideapps:["ap37","Internet","Google", "Freebox","Hacker's Keyboard","Play Games","Steam Chat","Steam Link"],
    appdisplayname:{"foobar2000":"foobar","Mars: Mars":"Mars"},
    bgchars:'-._ /',
-   notifguesslist:{"Bing":"Bing","photos auto-added":"Photos"," years ago":"Photos"," Chest unlocked":"Clash Royale","card request":"Clash Royale", "new messages":"Gmail"};
+   notifguesslist:{"Bing":"Bing","photos auto-added":"Photos"," years ago":"Photos"," Chest unlocked":"Clash Royale","card request":"Clash Royale", "new messages":"Gmail"},
    appnameminwidth:8,
-   notifstart:2,
+   zonenotifstart:2,
    displayablenotifs : 6,
-   appstart : 2 + 6 + 1,
+   zoneappstart : 2 + 6 + 1,
+   zonefooterheight : 6,
+   zonepaginationstart : 0,//will be calculated
    bgcolor:'#333333',
    textcolordim:'#999999',
    textcolorbright:'#ffffff',
-   highlightcolor='#ff3333',
+   highlightcolor:'#ff3333',
    appprefix:'>',
    appprefixonnotif:'>',//will also be highlighted
    appdisplaymode:'grid',//grid or text
@@ -26,20 +28,33 @@
     ap37.setTextSize(13);
     w = ap37.getScreenWidth();
     h = ap37.getScreenHeight();
+    config.zonepaginationstart = h - confg.zonefooterheight;
     background.init();
     print(3, h-1, config.appversion);//bottom left
     time.init();
     battery.init();
     apps.init();
     notifications.init();
-    print(w - 5, h - 1, 'EOF');
+    settings.init()
     ap37.setOnTouchListener(function (x, y) {
       notifications.onTouch(x, y);
       apps.onTouch(x, y);
+      settings.onTouch(x,y);
     });
   }
 
   // modules
+
+  var settings = {
+    init: function () {
+      print(w - 5, h - 1, 'EOF');
+    },
+    onTouch: function (x, y) {
+      if (x>=h-1 && y>=w-5){
+        config.appdisplaymode = (config.appdisplaymode=='grid') ? 'text' : 'grid';//grid or text
+      }
+    }
+  };
 
   var background = {
     randomline: function(nbc){
@@ -102,7 +117,7 @@
         var nots = ap37.getNotifications();
         notifications.list = nots; 
         // count notification per app
-        notificationcounter={}
+        let notificationcounter={}
         for (var i=0;i<nots.length;i++){
           var notification = nots[i]
           notifications.guessapp(notification)
@@ -123,7 +138,7 @@
           }
         }
         for (var i = 0; i < config.displayablenotifs ; i++) {// display max n notifications
-          var y = i + config.notifstart;// print notifications from line 2
+          var y = i + config.zonenotifstart;// print notifications from line 2
           background.printPattern(0, w, y);//erase line first
           if (i < nots.length) {
             nots[i].y = y;
@@ -134,7 +149,7 @@
           }
         }
       } else {
-        print(0,config.notifstart , 'Activate notifications');
+        print(0,config.zonenotifstart , 'Activate notifications');
       }
     },
     printNotification: function (notification, highlight) {
@@ -165,7 +180,7 @@
             return;
           }
         }
-      } else if (y === config.notifstart) {// permission request alert on line  3
+      } else if (y === config.zonenotifstart) {// permission request alert on line  3
         ap37.requestNotificationsPermission();
       }
     }
@@ -173,10 +188,8 @@
 
   var apps = {
     list: [],
-    pagefirstappnum: {0:0},
+    pagefirstappnum: {0 : 0},
     lineHeight: 2,
-    topMargin: config.appstart,
-    bottomMargin: 8,
     lines: 0,
     appWidth: 6,
     appsPerLine: 0,
@@ -184,14 +197,14 @@
     currentPage: 0,
     isNextPageButtonVisible: false,
     getdisplayname: function(app){
-      let n=app.name 
-      if(n in config.appdisplayname){ n=config.appdisplayname[n]}
-      app.displayname =  n[0].toUpperCase()+n.slice(1).replaceAll(" ","");
+      let n = app.name;
+      if(n in config.appdisplayname){ n = config.appdisplayname[n]; };
+      app.displayname = n[0].toUpperCase() + n.slice(1).replaceAll(" ","");
     },
     printPageGrid: function (page) {
       var appPos = page * apps.appsPerPage;
       for (var x = 0; x + apps.appWidth <= w; x += apps.appWidth) {
-        for (var y = apps.topMargin; y < apps.topMargin + apps.lines *
+        for (var y = config.zoneappstart; y < config.zoneappstart + apps.lines *
         apps.lineHeight; y += apps.lineHeight) {
           background.printPattern(x, x + apps.appWidth, y);
           if (appPos < apps.list.length) {
@@ -209,14 +222,14 @@
       let appnum = apps.pagefirstappnum[page];
       let fits = true;
       let x = 0;
-      let y = apps.topMargin;
-      while(fits){
+      let y = config.zoneappstart;
+      while(fits && appnum < apps.list.length){
         let app = apps.list[appnum];
-        app.xf = x + (config.appprefix + app.displayname).length;
-        if (app.xf > w){//if out of row
+        let xf = x + (config.appprefix + app.displayname).length;
+        if (xf > w){//if out of row
           x=0;
-          y++;
-          if(y>(h-apps.bottomMargin)){//out of screen
+          y+=2;//keep a blank line between rows
+          if(y>config.zonepaginationstart){//out of screen
             fits=false;
             apps.pagefirstappnum[page+1]=appnum;
             apps.pagination(true);// and activate pagination
@@ -227,6 +240,7 @@
           app.y = y;
           app.xf = x + (config.appprefix + app.displayname).length;
           apps.printApp(app, false);
+          x = app.xf + 1;//space between apps
           appnum++;
         }
       }
@@ -256,16 +270,15 @@
     pagination: function (onoff) {
       if(onoff){
         apps.isNextPageButtonVisible = true;// and activate pagination
-        print(w - 4, h - 9, '>>>');
-        print(w - 4, h - 8, '>>>');// TODO keep only one ?
+        print(w - 4, zonepaginationstart, '>>>');
       } else {
         apps.isNextPageButtonVisible = false;
-        background.printPattern(w - 4, w, h - 9);// erase pagination >>>
+        background.printPattern(w - 4, w, zonepaginationstart);// erase pagination >>>
       }
     },
     init: function () {
       apps.list=[];
-      appslist = ap37.getApps();
+      let appslist = ap37.getApps();
       for (var i = 0; i<appslist.length; i++){
        var app=appslist[i];
        if (!config.hideapps.includes(app.name)){
@@ -276,7 +289,7 @@
       }
       apps.currentPage = 0;
       if(config.appdisplaymode=='grid'){//grid mode
-        apps.lines = Math.floor((h - apps.topMargin - apps.bottomMargin) / apps.lineHeight);
+        apps.lines = Math.floor((config.zonepaginationstart - config.zoneappstart ) / apps.lineHeight);
         apps.appsPerLine = Math.ceil(apps.list.length / apps.lines);
         apps.appWidth = Math.floor(w / apps.appsPerLine);
         // check minimum app name length
@@ -305,9 +318,7 @@
           return;
         }
       }
-      if (apps.isNextPageButtonVisible &&
-        y >= h - 9 && y <= h - 8 &&
-        x >= w - 4 && x <= w) {
+      if (apps.isNextPageButtonVisible && y == zonepaginationstart && x >= w - 4 ) {
         apps.currentPage++;
         if(config.appdisplaymode=='grid'){//grid mode
           if (apps.currentPage * apps.appsPerPage >= apps.list.length) {
@@ -330,7 +341,7 @@
   };
 
   //utils
-  hexchars="0123456789abcdef";
+  const hexchars="0123456789abcdef";
   function randomizeHexColor(c) {
     function rndhex() {
       return hexchars.charAt(Math.floor(Math.random() * 16));
