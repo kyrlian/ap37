@@ -159,13 +159,15 @@
       settings.update();
     },
     update: function () {
-      print(w - 5, footer.top, apps.appdisplaymode.toUpperCase());
+      print(w - 6, footer.top, apps.appdisplaymode.toUpperCase());
     },
     onTouch: function (x, y) {
-      if (x >= w-5){//y tested by footer
+      if (x >= w-6){//y tested by footer
         apps.appdisplaymode = (apps.appdisplaymode == 'grid') ? 'text' : 'grid';//grid or text
         apps.update();
         settings.update();
+      } else if ( x < config.appversion.length ){
+        ap37.openLink("https://github.com/kyrlian/ap37");
       }
     }
   };
