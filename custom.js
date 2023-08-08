@@ -4,6 +4,7 @@
   // config
   const config={
    appversion:'ap37-kyr',
+   city:"Paris, France",
    hideApps:["ap37","Internet","Google", "Freebox","Hacker's Keyboard","Play Games","Steam Chat","Steam Link"],
    favoriteApps:["Phone","Signal","Gmail","Maps","Camera"],
    appDisplayName:{"foobar2000":"foobar","Mars: Mars":"Mars","Coding Python" : "Python",   "Freebox Connect" : "Freebox","G7 Taxi" : "G7","Keep Notes" : "Keep","Linux Command Library" : "Linux Command","Mandel Browser" : "Mandelbrot","Picturesaurus for Reddit" : "Picturesaurus","Simple Text Editor" : "TextEdit","SNCF Connect" : "SNCF"},
@@ -97,11 +98,10 @@
   };
 
   var meteo = {
-    city="Paris, France",
     meteourl:"",
     init: function () {
-      let encodedloc = encodeURIComponent(meteo.city);
-      let geourl ="https://geocode.maps.co/search?q=%22#LOC#22".replace("#LOC#", encodedloc);
+      let encodedloc = encodeURIComponent(config.city);
+      let geourl ="https://geocode.maps.co/search?q=%22#LOC#%22".replace("#LOC#", encodedloc);
       get(geourl, function (response) {
         let info = JSON.parse(response)[0];
         let latitude = info.lat.substring(0,5);
@@ -114,13 +114,13 @@
     },
     update: function () {
        get(meteo.meteourl, function (response) {
-        let temperature = JSON.parse(response).current_weather.temperature.split(".")[0];
-        print(w - 10, header.top, temperature+"°C");
+        let temperature = JSON.parse(response).current_weather.temperature;
+        print(w - 10, header.top, temperature.toFixed(0)+"°C");
        });
     },
     onTouch: function (x, y) {
       if(x > w - 10){//y tested by header
-        ap37.openLink("https://duckduckgo.com/?q=meteo+"+encodeURIComponent(meteo.city));
+        ap37.openLink("https://duckduckgo.com/?q=meteo+"+encodeURIComponent(config.city));
       }
     }
   };
@@ -162,7 +162,7 @@
     },
     onTouch: function (x, y) {
       if (x >= w-5 && y >= footer.top){
-        apps.appdisplaymode = (apps.appdisplaymode=='grid') ? 'text' : 'grid';//grid or text
+        apps.appdisplaymode = (apps.appdisplaymode == 'grid') ? 'text' : 'grid';//grid or text
         apps.update();
         settings.update();
       }
@@ -266,6 +266,7 @@
     prefix :"[",
     postfix:"]",
     spacing:0,
+    margin:0,
     init: function () {
       favorites.list = Array(config.favoriteApps.length)//init so we can put at the correct place
       let appslist = ap37.getApps();
@@ -279,8 +280,9 @@
         totalDisplayLen += app.favoriteDisplay.length;
        }
       }
-      favorites.spacing = math.Floor( (w - totalDisplayLen ) / (favorites.list.length+1));
-      let x = favorites.spacing;
+      favorites.spacing = Math.floor( (w - totalDisplayLen ) / (favorites.list.length-1));
+      favorites.margin = Math.floor((w - (favorites.list.length-1) * favorites.spacing ) / 2);
+      let x = favorites.margin;
       for (let i = 0; i< favorites.list.length; i++){//compute positions and draw
         let app = favorites.list[i];
         app.x0 = x;
@@ -291,7 +293,7 @@
       }
     },
     printApp: function (app, highlight) {
-      print(app.x0, app.y, app.favoriteDisplay, highlight ? config.textcolorclicked : config.textcolordim);
+      print(app.x0, app.y, app.favoriteDisplay, highlight ? config.textcolorclicked : config.textcolorbright);
       if (highlight) {
         setTimeout(function () {
           favorites.printApp(app, false);
@@ -317,11 +319,11 @@
     top: notifications.bottom,
     bottom: favorites.top - 1, //keep 1 because we use bottom line for pagination
     appprefix:'>',
-    gridAppNameMinWidth:8,//for grid display
     appprefixonnotif:'>',//will also be highlighted
     appdisplaymode:'grid',//grid or text 
     list: [],
     pagefirstappnum: {0 : 0},
+    gridAppNameMinWidth:8,//for grid display
     gridlineHeight: 2,
     gridlines: 0,
     gridAppWidth: 6,
@@ -380,9 +382,9 @@
         }
       }
       if(page==0 && y < apps.bottom ){
-        apps.pagination(false);// deactivate printPagination
+        apps.printPagination(false);// deactivate printPagination
       }
-      for(let j=y;j< apps.bottom ;j++){
+      for(let j=y+1;j < apps.bottom ;j++){
         background.printPattern(0, w, j);//erase rest of the zone
       }
     },
@@ -531,7 +533,7 @@
   }
 
   function debug(str){
-    print(0,h-2,str,'#ff3333')
+    print(0,h-2,""+str,'#ff3333')
   }
   init();
 })();
