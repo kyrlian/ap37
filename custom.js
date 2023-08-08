@@ -4,9 +4,9 @@
   // config
   const config={
    appversion:'ap37-kyr',
-   hideapps:["ap37","Internet","Google", "Freebox","Hacker's Keyboard","Play Games","Steam Chat","Steam Link"],
-   favoriteapps:["Phone","Signal","Gmail","Maps","Camera"],
-   appdisplayname:{"foobar2000":"foobar","Mars: Mars":"Mars","Coding Python" : "Python",   "Freebox Connect" : "Freebox","G7 Taxi" : "G7","Keep Notes" : "Keep","Linux Command Library" : "Linux Command","Mandel Browser" : "Mandelbrot","Picturesaurus for Reddit" : "Picturesaurus","Simple Text Editor" : "TextEdit","SNCF Connect" : "SNCF"},
+   hideApps:["ap37","Internet","Google", "Freebox","Hacker's Keyboard","Play Games","Steam Chat","Steam Link"],
+   favoriteApps:["Phone","Signal","Gmail","Maps","Camera"],
+   appDisplayName:{"foobar2000":"foobar","Mars: Mars":"Mars","Coding Python" : "Python",   "Freebox Connect" : "Freebox","G7 Taxi" : "G7","Keep Notes" : "Keep","Linux Command Library" : "Linux Command","Mandel Browser" : "Mandelbrot","Picturesaurus for Reddit" : "Picturesaurus","Simple Text Editor" : "TextEdit","SNCF Connect" : "SNCF"},
    notifguesslist:{"Bing":"Bing","photos auto-added":"Photos"," years ago":"Photos"," Chest unlocked":"Clash Royale","card request":"Clash Royale", "new messages":"Gmail"},
    bgcolor:'#333333',
    textcolordim:'#999999',
@@ -118,9 +118,9 @@
         print(w - 10, header.top, temperature+"°C");
        });
     },
-    onTouch: function (x, y) {// TODO open meteo url
+    onTouch: function (x, y) {
       if(x > w - 10){//y tested by header
-        //ap37.openLink('http://google.com');
+        ap37.openLink("https://duckduckgo.com/?q=meteo+"+encodeURIComponent(meteo.city));
       }
     }
   };
@@ -262,13 +262,53 @@
     bottom: footer.top,
     heigth:2,
     top: footer.top-2,
-    list=[],
+    list:[],
+    prefix :"[",
+    postfix:"]",
+    spacing:0,
     init: function () {
-      //TODO display favoriteapps on a single line
+      favorites.list = Array(config.favoriteApps.length)//init so we can put at the correct place
+      let appslist = ap37.getApps();
+      let totalDisplayLen = 0
+      for (let i = 0; i < appslist.length; i++){
+       let app = appslist[i];
+       if (config.favoriteApps.includes(app.name)){//init list
+        apps.getdisplayname(app)
+        app.favoriteDisplay = favorites.prefix + app.displayname + favorites.postfix;
+        favorites.list[config.favoriteApps.indexOf(app.name)] = app;
+        totalDisplayLen += app.favoriteDisplay.length;
+       }
+      }
+      favorites.spacing = math.Floor( (w - totalDisplayLen ) / (favorites.list.length+1));
+      let x = favorites.spacing;
+      for (let i = 0; i< favorites.list.length; i++){//compute positions and draw
+        let app = favorites.list[i];
+        app.x0 = x;
+        app.y = favorites.top;
+        app.xf = x + app.favoriteDisplay.length;
+        x = app.xf + favorites.spacing;
+        favorites.printApp(app, false);
+      }
     },
-    update: function () {
+    printApp: function (app, highlight) {
+      print(app.x0, app.y, app.favoriteDisplay, highlight ? config.textcolorclicked : config.textcolordim);
+      if (highlight) {
+        setTimeout(function () {
+          favorites.printApp(app, false);
+        }, 1000);
+      }
     },
     onTouch: function (x, y) {
+      if(y == favorites.top){
+        for (let i = 0; i< favorites.list.length; i++){
+          let app = favorites.list[i];
+          if (x >= app.x0 && x <= app.xf) {
+            favorites.printApp(app, true);//highligth
+            ap37.openApp(app.id);
+            return;
+          }
+        }
+      }
     }
   };
 
@@ -291,7 +331,7 @@
     isNextPageButtonVisible: false,
     getdisplayname: function(app){
       let n = app.name;
-      if(n in config.appdisplayname){ n = config.appdisplayname[n]; };
+      if(n in config.appDisplayName){ n = config.appDisplayName[n]; };
       app.displayname = n[0].toUpperCase() + n.slice(1).replaceAll(" ","");
     },
     printPageGrid: function (page) {
@@ -383,7 +423,7 @@
       let appslist = ap37.getApps();
       for (var i = 0; i<appslist.length; i++){
        var app=appslist[i];
-       if (!config.hideapps.includes(app.name)){
+       if (!config.hideApps.includes(app.name)){
         app.notifcount=0;
         apps.getdisplayname(app)
         apps.list.push(app);
@@ -423,7 +463,7 @@
           }
         }
       }
-      if (apps.isNextPageButtonVisible && y == apps.bottom && x >= w - 4 ) {//TODO replace config with apps.bottom
+      if (apps.isNextPageButtonVisible && y == apps.bottom && x >= w - 4 ) {
         apps.currentPage++;
         if((apps.appdisplaymode=='grid' && apps.currentPage * apps.gridAppsPerPage >= apps.list.length) ||
          (apps.appdisplaymode=='text' && !(apps.currentPage in apps.pagefirstappnum))){
