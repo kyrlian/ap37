@@ -9,15 +9,20 @@
    favoriteApps:["Phone","Signal","Gmail","Maps","Camera"],
    appDisplayName:{"foobar2000":"foobar","Mars: Mars":"Mars","Coding Python" : "Python",   "Freebox Connect" : "Freebox","G7 Taxi" : "G7","Keep Notes" : "Keep","Linux Command Library" : "Linux Command","Mandel Browser" : "Mandelbrot","Picturesaurus for Reddit" : "Picturesaurus","Simple Text Editor" : "TextEdit","SNCF Connect" : "SNCF"},
    notifguesslist:{"Bing":"Bing","photos auto-added":"Photos"," years ago":"Photos"," Chest unlocked":"Clash Royale","card request":"Clash Royale", "new messages":"Gmail"},
-   bgcolor:'#333333',
+   bgcolor:'#443322',
    textcolordim:'#999999',
    textcolorbright:'#ffffff',
-   textcolorclicked:'#ff3333',
+   textcolorclicked:'#ff9933',
   }
   //
   ap37.setTextSize(13);
   var w = ap37.getScreenWidth();
   var h = ap37.getScreenHeight();
+
+  function debugstuff(){//use this to display debug info in footer
+   // debug(JSON.stringify(ap37.getNotifications()))
+  }
+
   function init() {
     background.init();
     header.init();
@@ -149,6 +154,7 @@
     onTouch: function (x, y) {
       if(y >= footer.top && y < footer.bottom ){
         settings.onTouch(x,y);
+        debugstuff();// run debug display
       }
     }
   };
@@ -325,7 +331,7 @@
     bottom: favorites.top - 1, //keep 1 because we use bottom line for pagination
     appprefix:'>',
     appprefixonnotif:'>',//will also be highlighted
-    appdisplaymode:'grid',//grid or text 
+    appdisplaymode:'text',//grid or text 
     list: [],
     pagefirstappnum: {0 : 0},
     gridAppNameMinWidth:8,//for grid display
@@ -542,6 +548,7 @@
   function debug(str){
     print(0,h-2,""+str,'#ff3333')
   }
+
   init();
 })();
   
