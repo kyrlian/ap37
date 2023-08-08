@@ -2,10 +2,18 @@
 
 - Original [script.js](./script.js)
 - [notifcount.js](./notifcount.js) is a minimal modification of [script.js](./script.js) to display notification count for each application. Because ap37.[getNotifications()](https://github.com/apseren/ap37#getnotifications) doesn't return the application name, I use a guess list based on the notification message to try to identify the application for each notification. If found I add the counter in place of the '_' in front of the application name.
-- [custom.js](./custom.js) is my own launcher.
-- [loader.js](./loader.js) loads a file and uses it as a launcher script, for testing.
+- [custom.js](./custom.js) is my own launcher, the main modifications are:
+  - Display temperature (city is set at the begining of the script)
+  - Abillity to switch apps in grid mode (original), and text mode
+  - Ability to hide some apps
+  - Ability to rename some apps
+  - Show favorite apps in the bottom
+  - Removed display glitches
+  - Removed markets
+  - Removed transmissions
+- [loader.js](./loader.js) loads a file from internet and uses it as a launcher script, good for testing.
 
-Original README: 
+Original [ap37](https://github.com/apseren/ap37) README: 
 
 # ap37 Launcher
 
