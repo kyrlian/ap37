@@ -105,7 +105,7 @@
       get(geourl, function (response) {
         let info = JSON.parse(response)[0];
         let latitude = info.lat.substring(0,5);
-        let longitude = info.long.substring(0,5);
+        let longitude = info.lon.substring(0,5);
         let template="https://api.open-meteo.com/v1/forecast?latitude=#LAT#&longitude=#LONG#&current_weather=true&forecast_days=1";
         meteo.meteourl = template.replace("#LAT#", latitude).replace("#LONG#",longitude);
         meteo.update();
@@ -280,8 +280,8 @@
         totalDisplayLen += app.favoriteDisplay.length;
        }
       }
-      favorites.spacing = Math.floor( (w - totalDisplayLen ) / (favorites.list.length-1));
-      favorites.margin = Math.floor((w - (favorites.list.length-1) * favorites.spacing ) / 2);
+      favorites.spacing = Math.floor( (w - totalDisplayLen ) / (favorites.list.length - 1));
+      favorites.margin = Math.floor((w - totalDisplayLen - (favorites.list.length - 1) * favorites.spacing ) / 2);
       let x = favorites.margin;
       for (let i = 0; i< favorites.list.length; i++){//compute positions and draw
         let app = favorites.list[i];
