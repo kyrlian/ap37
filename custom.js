@@ -8,15 +8,10 @@
    favoriteapps:["Phone","Signal","Gmail","Maps","Camera"],
    appdisplayname:{"foobar2000":"foobar","Mars: Mars":"Mars","Coding Python" : "Python",   "Freebox Connect" : "Freebox","G7 Taxi" : "G7","Keep Notes" : "Keep","Linux Command Library" : "Linux Command","Mandel Browser" : "Mandelbrot","Picturesaurus for Reddit" : "Picturesaurus","Simple Text Editor" : "TextEdit","SNCF Connect" : "SNCF"},
    notifguesslist:{"Bing":"Bing","photos auto-added":"Photos"," years ago":"Photos"," Chest unlocked":"Clash Royale","card request":"Clash Royale", "new messages":"Gmail"},
-   appnameminwidth:8,//for grid display
-   bgchars:'-._ /',
    bgcolor:'#333333',
    textcolordim:'#999999',
    textcolorbright:'#ffffff',
-   highlightcolor:'#ff3333',
-   appprefix:'>',
-   appprefixonnotif:'>',//will also be highlighted
-   appdisplaymode:'grid',//grid or text
+   textcolorclicked:'#ff3333',
   }
   //
   ap37.setTextSize(13);
@@ -41,10 +36,11 @@
   // modules
 
   var background = {
+    bgchars:'-._ /',
     randomline: function(nbc){
       let line = "";
       for (let i = 0; i < nbc; i++) {
-        line += config.bgchars.charAt(Math.floor(Math.random() * config.bgchars.length));
+        line += background.bgchars.charAt(Math.floor(Math.random() * background.bgchars.length));
       }
       return line;
     },
@@ -66,11 +62,12 @@
     bottom:2,
     init: function () {
       time.init();
-      battery.init();
       meteo.init()
+      battery.init();
     },
     onTouch: function (x, y) {
       if(y==header.top){
+        time.onTouch(x,y);
         meteo.onTouch(x,y);
       }
     },
@@ -89,7 +86,42 @@
       setInterval(time.update, 60000);
     },
     onTouch: function (x, y) {
-      // TODO open clock app
+      if(x < 10){//y tested by header
+        for ( var j=0;j<apps.list.length;j++){
+          if (apps.list[j].name == "Clock"){
+            ap37.openApp(app.id);
+          }
+        }
+      }
+    }
+  };
+
+  var meteo = {
+    city="Paris, France",
+    meteourl:"",
+    init: function () {
+      let encodedloc = encodeURIComponent(meteo.city);
+      let geourl ="https://geocode.maps.co/search?q=%22#LOC#22".replace("#LOC#", encodedloc);
+      get(geourl, function (response) {
+        let info = JSON.parse(response)[0];
+        let latitude = info.lat.substring(0,5);
+        let longitude = info.long.substring(0,5);
+        let template="https://api.open-meteo.com/v1/forecast?latitude=#LAT#&longitude=#LONG#&current_weather=true&forecast_days=1";
+        meteo.meteourl = template.replace("#LAT#", latitude).replace("#LONG#",longitude);
+        meteo.update();
+      });
+      setInterval(meteo.update, 3600000);//1h
+    },
+    update: function () {
+       get(meteo.meteourl, function (response) {
+        let temperature = JSON.parse(response).current_weather.temperature.split(".")[0];
+        print(w - 10, header.top, temperature+"°C");
+       });
+    },
+    onTouch: function (x, y) {// TODO open meteo url
+      if(x > w - 10){//y tested by header
+        //ap37.openLink('http://google.com');
+      }
     }
   };
 
@@ -104,18 +136,6 @@
     }
   };
 
-  var meteo = {//TODO stub meteo
-    url:"https://api.open-meteo.com/v1/forecast?latitude=52.52&longitude=13.41&current_weather=true&forecast_days=1",
-    init: function () {
-      meteo.update();
-      setInterval(meteo.update, 3600000);//1h
-    },
-    update: function () {
-       // todo update temp
-    },
-    onTouch: function (x, y) {// todo open meteo app
-    }
-  };
 
   var footer = {
     heigth:1,
@@ -138,11 +158,11 @@
       settings.update();
     },
     update: function () {
-      print(w - 5, footer.top, config.appdisplaymode.toUpperCase());
+      print(w - 5, footer.top, apps.appdisplaymode.toUpperCase());
     },
     onTouch: function (x, y) {
       if (x >= w-5 && y >= footer.top){
-        config.appdisplaymode = (config.appdisplaymode=='grid') ? 'text' : 'grid';//grid or text
+        apps.appdisplaymode = (apps.appdisplaymode=='grid') ? 'text' : 'grid';//grid or text
         apps.update();
         settings.update();
       }
@@ -212,7 +232,7 @@
         disp = disp.substring(0, length) + "... +" +
           (notifications.list.length -  notifications.height); //last notification with: name... number of remaining notifs
       }
-      print(0, notification.y, disp, highlight ? config.highlightcolor : config.textcolorbright);// highlight is set on touch callback 
+      print(0, notification.y, disp, highlight ? config.textcolorclicked : config.textcolorbright);// highlight is set on touch callback 
       if (highlight) {// if highlight set a timeout to reset to normal
         setTimeout(function () {
           notifications.printNotification(notification, false);
@@ -242,6 +262,7 @@
     bottom: footer.top,
     heigth:2,
     top: footer.top-2,
+    list=[],
     init: function () {
       //TODO display favoriteapps on a single line
     },
@@ -254,14 +275,18 @@
   var apps = {
     heigth: favorites.top - 1 - notifications.bottom,
     top: notifications.bottom,
-    bottom: favorites.top - 1, //keep 1 because we use bottom line for pagination    
+    bottom: favorites.top - 1, //keep 1 because we use bottom line for pagination
+    appprefix:'>',
+    gridAppNameMinWidth:8,//for grid display
+    appprefixonnotif:'>',//will also be highlighted
+    appdisplaymode:'grid',//grid or text 
     list: [],
     pagefirstappnum: {0 : 0},
-    lineHeight: 2,
-    lines: 0,
-    appWidth: 6,
-    appsPerLine: 0,
-    appsPerPage: 0,
+    gridlineHeight: 2,
+    gridlines: 0,
+    gridAppWidth: 6,
+    gridAppsPerLine: 0,
+    gridAppsPerPage: 0,
     currentPage: 0,
     isNextPageButtonVisible: false,
     getdisplayname: function(app){
@@ -270,15 +295,16 @@
       app.displayname = n[0].toUpperCase() + n.slice(1).replaceAll(" ","");
     },
     printPageGrid: function (page) {
-      var appPos = page * apps.appsPerPage;
-      for (var x = 0; x + apps.appWidth <= w; x += apps.appWidth) {
-        for (var y = apps.top; y < apps.bottom; y += apps.lineHeight) {
-          background.printPattern(x, x + apps.appWidth, y);
+      var appPos = page * apps.gridAppsPerPage;
+      for (var x = 0; x + apps.gridAppWidth <= w; x += apps.gridAppWidth) {
+        for (var y = apps.top; y < apps.bottom; y += apps.gridlineHeight) {
+          background.printPattern(x, x + apps.gridAppWidth, y);
           if (appPos < apps.list.length) {
             var app = apps.list[appPos];
             app.y = y;
             app.x0 = x;
-            app.xf = x + apps.appWidth;
+            app.xf = x + apps.gridAppWidth;
+            app.page = page;
             apps.printApp(app, false);
             appPos++;
           }
@@ -292,13 +318,13 @@
       background.printPattern(0, w, y);
       while(y < apps.bottom && appnum < apps.list.length){
         let app = apps.list[appnum];
-        let xf = x + (config.appprefix + app.displayname).length;
+        let xf = x + (apps.appprefix + app.displayname).length;
         if (xf > w){//if out of row
           x=0;
           y+=2;//keep a blank line between rows
           if(y>= apps.bottom ){//out of screen
             apps.pagefirstappnum[page+1]=appnum;
-            apps.pagination(true);// and activate pagination
+            apps.printPagination(true);// and activate pagination
           }else{
             background.printPattern(0, w, y);
           }
@@ -306,42 +332,46 @@
         if(y < apps.bottom){
           app.x0 = x;
           app.y = y;
-          app.xf = x + (config.appprefix + app.displayname).length;
+          app.xf = x + (apps.appprefix + app.displayname).length;
+          app.page = page;
           apps.printApp(app, false);
           x = app.xf + 1;//space between apps
           appnum++;
         }
       }
       if(page==0 && y < apps.bottom ){
-        apps.pagination(false);// deactivate pagination
+        apps.pagination(false);// deactivate printPagination
       }
       for(let j=y;j< apps.bottom ;j++){
         background.printPattern(0, w, j);//erase rest of the zone
       }
     },
     printApp: function (app, highlight) {
-      let display = config.appprefix + app.displayname
-      if(config.appdisplaymode == 'grid'){//grid mode
-        display =  display.substring(0, apps.appWidth - 1)
+      let display = apps.appprefix + app.displayname
+      if(apps.appdisplaymode == 'grid'){//grid mode
+        display =  display.substring(0, apps.gridAppWidth - 1)
       }
-      print(app.x0, app.y, display, highlight ? config.highlightcolor : config.textcolordim);
+      print(app.x0, app.y, display, highlight ? config.textcolorclicked : config.textcolordim);
       apps.printNotifCount(app);
       if (highlight) {
         setTimeout(function () {
           apps.printApp(app, false);
         }, 1000);
       } else {
-        print(app.x0+config.appprefix.length, app.y, app.displayname[0], config.textcolorbright);//highlight first letter after prefix
+        print(app.x0+apps.appprefix.length, app.y, app.displayname[0], config.textcolorbright);//highlight first letter after prefix
       }
     },
     printNotifCount: function(app) {
       if (app.notifcount > 0){
-         print(app.x0, app.y, config.appprefixonnotif + app.displayname, config.textcolorbright);//highlight prefix
+         print(app.x0, app.y, apps.appprefixonnotif + app.displayname, config.textcolorbright);//highlight prefix
       }
     },
-    pagination: function (onoff) {
+    printPagination: function (onoff) {
+      if(onoff == ""){//if call with neither true or false, just print
+        onoff = apps.isNextPageButtonVisible;
+      }
       if(onoff){
-        apps.isNextPageButtonVisible = true;// and activate pagination
+        apps.isNextPageButtonVisible = true;// activate pagination
         print(w - 4, apps.bottom, '>>>');
       } else {
         apps.isNextPageButtonVisible = false;
@@ -360,42 +390,43 @@
        }
       }
       apps.currentPage = 0;
-      apps.lines = Math.floor( apps.heigth / apps.lineHeight);
+      //grid setup
+      apps.gridlines = Math.floor( apps.heigth / apps.gridlineHeight);
+      apps.gridAppsPerLine = Math.ceil(apps.list.length / apps.gridlines);
+      apps.gridAppWidth = Math.floor(w / apps.gridAppsPerLine);
+      if (apps.gridAppWidth < apps.gridAppNameMinWidth) {//if available app width is too small
+        apps.gridAppWidth = apps.gridAppNameMinWidth;// force
+        apps.gridAppsPerLine = Math.floor(w / apps.gridAppWidth);
+        apps.printPagination(true);// and activate pagination
+      } else {
+        apps.printPagination(false);
+      }
+      apps.gridAppsPerPage = apps.gridlines * apps.gridAppsPerLine
       apps.update();
       ap37.setOnAppsListener(apps.init);// reset app list callback
     },
     update: function() {
-      if(config.appdisplaymode=='grid'){//grid
-        // check minimum app name length
-        apps.appsPerLine = Math.ceil(apps.list.length / apps.lines);
-        apps.appWidth = Math.floor(w / apps.appsPerLine);
-        if (apps.appWidth < config.appnameminwidth) {//if available app width is too small
-          apps.appWidth = config.appnameminwidth;// force
-          apps.appsPerLine = Math.floor(w / apps.appWidth);
-          apps.pagination(true);// and activate pagination
-        } else {
-          apps.pagination(false);
-        }
-        apps.appsPerPage = apps.lines * apps.appsPerLine
+      if(apps.appdisplaymode=='grid'){//grid
         apps.printPageGrid(apps.currentPage);
       } else {//text mode
         apps.printPageText(apps.currentPage);
       }
     },
     onTouch: function (x, y) {
-      for (var i = apps.currentPage * apps.appsPerPage; i < apps.list.length; i++) {
+      for (var i = 0; i<apps.list.length; i++){
         var app = apps.list[i];
-        if (y >= app.y && y <= app.y + 1 &&
-          x >= app.x0 && x <= app.xf) {
-          apps.printApp(app, true);
-          ap37.openApp(app.id);
-          return;
+        if (app.page == apps.currentPage){
+          if (y >= app.y && y <= app.y + 1 && x >= app.x0 && x <= app.xf) {
+            apps.printApp(app, true);
+            ap37.openApp(app.id);
+            return;
+          }
         }
       }
-      if (apps.isNextPageButtonVisible && y == config.zonepaginationstart && x >= w - 4 ) {
+      if (apps.isNextPageButtonVisible && y == apps.bottom && x >= w - 4 ) {//TODO replace config with apps.bottom
         apps.currentPage++;
-        if((config.appdisplaymode=='grid' && apps.currentPage * apps.appsPerPage >= apps.list.length) ||
-         (config.appdisplaymode=='text' && !(apps.currentPage in apps.pagefirstappnum))){
+        if((apps.appdisplaymode=='grid' && apps.currentPage * apps.gridAppsPerPage >= apps.list.length) ||
+         (apps.appdisplaymode=='text' && !(apps.currentPage in apps.pagefirstappnum))){
             apps.currentPage = 0;
         }
         apps.update();
