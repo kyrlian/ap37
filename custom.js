@@ -67,7 +67,7 @@
       battery.init();
     },
     onTouch: function (x, y) {
-      if(y==header.top){
+      if(y>=header.top && y < header.bottom){
         time.onTouch(x,y);
         meteo.onTouch(x,y);
       }
@@ -89,7 +89,8 @@
     onTouch: function (x, y) {
       if(x < 10){//y tested by header
         for ( var j=0;j<apps.list.length;j++){
-          if (apps.list[j].name == "Clock"){
+          let app = apps.list[j]
+          if (app.name == "Clock"){
             ap37.openApp(app.id);
           }
         }
@@ -115,7 +116,7 @@
     update: function () {
        get(meteo.meteourl, function (response) {
         let temperature = JSON.parse(response).current_weather.temperature;
-        print(w - 10, header.top, temperature.toFixed(0)+"°C");
+        print(w - 10, header.top, temperature.toFixed(0)+"'C");
        });
     },
     onTouch: function (x, y) {
@@ -146,7 +147,7 @@
       settings.init()
     },
     onTouch: function (x, y) {
-      if(y == footer.top){
+      if(y >= footer.top && y < footer.bottom ){
         settings.onTouch(x,y);
       }
     }
@@ -161,7 +162,7 @@
       print(w - 5, footer.top, apps.appdisplaymode.toUpperCase());
     },
     onTouch: function (x, y) {
-      if (x >= w-5 && y >= footer.top){
+      if (x >= w-5){//y tested by footer
         apps.appdisplaymode = (apps.appdisplaymode == 'grid') ? 'text' : 'grid';//grid or text
         apps.update();
         settings.update();
@@ -245,11 +246,13 @@
     },
     onTouch: function (x, y) {
       if (notifications.active) {
-        for (var i = 0; i < notifications.list.length; i++) {
-          if (notifications.list[i].y === y) {
-            notifications.printNotification(notifications.list[i], true);// highlight touched
-            ap37.openNotification(notifications.list[i].id);// and open
-            return;
+        if(y >= notifications.top && y < notifications.bottom ){
+          for (var i = 0; i < notifications.list.length; i++) {
+            if (notifications.list[i].y === y) {
+              notifications.printNotification(notifications.list[i], true);// highlight touched
+              ap37.openNotification(notifications.list[i].id);// and open
+              return;
+            }
           }
         }
       } else if (y === notifications.top ) {// permission request alert on line  3
@@ -301,7 +304,7 @@
       }
     },
     onTouch: function (x, y) {
-      if(y == favorites.top){
+      if(y >= favorites.top && y < favorites.bottom){
         for (let i = 0; i< favorites.list.length; i++){
           let app = favorites.list[i];
           if (x >= app.x0 && x <= app.xf) {
@@ -455,13 +458,15 @@
       }
     },
     onTouch: function (x, y) {
-      for (var i = 0; i<apps.list.length; i++){
-        var app = apps.list[i];
-        if (app.page == apps.currentPage){
-          if (y >= app.y && y <= app.y + 1 && x >= app.x0 && x <= app.xf) {
-            apps.printApp(app, true);
-            ap37.openApp(app.id);
-            return;
+      if(y >= apps.top && y < apps.bottom){
+        for (var i = 0; i<apps.list.length; i++){
+          var app = apps.list[i];
+          if (app.page == apps.currentPage){
+            if (y >= app.y && y <= app.y + 1 && x >= app.x0 && x <= app.xf) {
+              apps.printApp(app, true);
+              ap37.openApp(app.id);
+              return;
+            }
           }
         }
       }
