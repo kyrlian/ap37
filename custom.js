@@ -170,8 +170,7 @@
     },
     onTouch: function (x, y) {
       if (x >= w-6){//y tested by footer
-        apps.appdisplaymode = (apps.appdisplaymode == 'grid') ? 'text' : 'grid';//grid or text
-        apps.update();
+        apps.toggledisplaymode();
         settings.update();
       } else if ( x < config.appversion.length ){
         ap37.openLink("https://github.com/kyrlian/ap37");
@@ -335,12 +334,8 @@
     appdisplaymode:'text',//grid or text 
     list: [],
     pagefirstappnum: {0 : 0},
-    gridAppNameMinWidth:8,//for grid display
-    gridlineHeight: 2,
-    gridlines: 0,
-    gridAppWidth: 6,
-    gridAppsPerLine: 0,
-    gridAppsPerPage: 0,
+    gridAppWidth: 0,
+    gridAppsPerLine: 4, //set this as you want
     textlineHeight: 2,
     currentPage: 0,
     isNextPageButtonVisible: false,
@@ -349,33 +344,22 @@
       if(n in config.appDisplayName){ n = config.appDisplayName[n]; };
       app.displayname = n[0].toUpperCase() + n.slice(1).replaceAll(" ","");
     },
-    printPageGrid: function (page) {
-      var appPos = page * apps.gridAppsPerPage;
-      for (var x = 0; x + apps.gridAppWidth <= w; x += apps.gridAppWidth) {
-        for (var y = apps.top; y < apps.bottom; y += apps.gridlineHeight) {
-          background.printPattern(x, x + apps.gridAppWidth, y);
-          if (appPos < apps.list.length) {
-            var app = apps.list[appPos];
-            if (config.gridApps.includes(app.name)){
-              app.y = y;
-              app.x0 = x;
-              app.xf = x + apps.gridAppWidth;
-              app.page = page;
-              apps.printApp(app, false);
-              appPos++;
-            }
-          }
-        }
+    getxshift: function(app){
+      if (apps.appdisplaymode=='grid'){
+        return gridAppWidth;
+      } else {
+        return (apps.appprefix + app.displayname).length + 1;
       }
     },
-    printPageText: function (page) {
+    printPage: function (page) {
       let appnum = apps.pagefirstappnum[page];
       let x = 0;
       let y = apps.top;
       background.printPattern(0, w, y);
       while(y < apps.bottom && appnum < apps.list.length){
         let app = apps.list[appnum];
-        let xf = x + (apps.appprefix + app.displayname).length;
+        let xshift = getxshift(app);
+        let xf = x + xshift;
         if (xf > w){//if out of row
           x=0;
           y+=apps.textlineHeight;//keep a blank line between rows
@@ -389,10 +373,10 @@
         if(y < apps.bottom){
           app.x0 = x;
           app.y = y;
-          app.xf = x + (apps.appprefix + app.displayname).length;
+          app.xf = x + xshift;
           app.page = page;
           apps.printApp(app, false);
-          x = app.xf + 1;//space between apps
+          x = app.xf;
           appnum++;
         }
       }
@@ -447,27 +431,17 @@
        }
       }
       apps.currentPage = 0;
-      //grid setup
-      apps.gridlines = Math.floor( apps.heigth / apps.gridlineHeight);
-      apps.gridAppsPerLine = Math.ceil(apps.list.length / apps.gridlines);
       apps.gridAppWidth = Math.floor(w / apps.gridAppsPerLine);
-      if (apps.gridAppWidth < apps.gridAppNameMinWidth) {//if available app width is too small
-        apps.gridAppWidth = apps.gridAppNameMinWidth;// force
-        apps.gridAppsPerLine = Math.floor(w / apps.gridAppWidth);
-        apps.printPagination(true);// and activate pagination
-      } else {
-        apps.printPagination(false);
-      }
-      apps.gridAppsPerPage = apps.gridlines * apps.gridAppsPerLine
       apps.update();
       ap37.setOnAppsListener(apps.init);// reset app list callback
     },
+    toggledisplaymode: function(){
+        apps.appdisplaymode = (apps.appdisplaymode == 'grid') ? 'text' : 'grid';//grid or text
+        apps.currentPage = 0;
+        apps.update();
+    },
     update: function() {
-      if(apps.appdisplaymode=='grid'){//grid
-        apps.printPageGrid(apps.currentPage);
-      } else {//text mode
-        apps.printPageText(apps.currentPage);
-      }
+      apps.printPage(apps.currentPage);
     },
     onTouch: function (x, y) {
       if(y >= apps.top && y < apps.bottom){
@@ -484,8 +458,7 @@
       }
       if (apps.isNextPageButtonVisible && y == apps.bottom && x >= w - 4 ) {
         apps.currentPage++;
-        if((apps.appdisplaymode=='grid' && apps.currentPage * apps.gridAppsPerPage >= apps.list.length) ||
-         (apps.appdisplaymode=='text' && !(apps.currentPage in apps.pagefirstappnum))){
+        if(!(apps.currentPage in apps.pagefirstappnum)){
             apps.currentPage = 0;
         }
         apps.update();
