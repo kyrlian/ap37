@@ -8,7 +8,7 @@
    hideApps:["ap37","Internet","Google", "Freebox","Hacker's Keyboard","Play Games","Samsung O","Steam Chat","Steam Link"],
    favoriteApps:["Phone","Signal","Gmail","Maps","Camera"],
    gridApps:["VLC","Firefox","Keep Notes","Clash Royale","Citymapper","foobar2000"],
-   appDisplayName:{"foobar2000":"foobar","Mars: Mars":"Mars","Coding Python" : "Python", "Freebox Connect" : "Freebox","G7 Taxi" : "G7","Keep Notes" : "Keep","Linux Command Library" : "Linux Command","Mandel Browser" : "Mandelbrot","Picturesaurus for Reddit" : "Picturesaurus","Simple Text Editor" : "TextEdit","SNCF Connect" : "SNCF"},
+   appDisplayName:{"My Files":"Files","foobar2000":"foobar","Mars: Mars":"Mars","Coding Python" : "Python", "Freebox Connect" : "Freebox","G7 Taxi" : "G7","Keep Notes" : "Keep","Linux Command Library" : "Linux Command","Mandel Browser" : "Mandelbrot","Picturesaurus for Reddit" : "Picturesaurus","Simple Text Editor" : "TextEdit","SNCF Connect" : "SNCF"},
    notifguesslist:{"Bing":"Bing","photos auto-added":"Photos"," years ago":"Photos"," Chest unlocked":"Clash Royale","card request":"Clash Royale", "new messages":"Gmail"},
    bgcolor:'#443322',
    textcolordim:'#999999',
@@ -332,12 +332,12 @@
     bottom: favorites.top - 1, //keep 1 because we use bottom line for pagination
     appprefix:'>',
     appprefixonnotif:'>',//will also be highlighted
-    appdisplaymode:'text',//grid or text 
+    appdisplaymode:'grid',//grid or text 
     list: [],
     pagefirstappnum: {0 : 0},
     margin:1,
     gridAppWidth: 0,
-    gridAppsPerLine: 2, //set this as you want
+    gridAppsPerLine: 1, //set this as you want
     textlineHeight: 2,
     currentPage: 0,
     isNextPageButtonVisible: false,
@@ -363,7 +363,7 @@
         if (apps.appdisplaymode!='grid' || config.gridApps.includes(app.name) ){//if grid mode, only get gridApps
           let xshift = apps.getxshift(app);
           let xf = x + xshift;
-          if (xf > w-apps.margin){//if out of row
+          if (xf > w){//if out of row
             x=apps.margin;
             y+=apps.textlineHeight;//keep a blank line between rows
             if(y >= apps.bottom ){//out of screen
