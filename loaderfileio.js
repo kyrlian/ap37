@@ -14,9 +14,9 @@ function getfilekey(filename,callback){
   xhr.onload = function () {
    print("getfilekey status:"+xhr.status);
    if (xhr.status === 200) {
-     print("response:"+xhr.response);
+     print("getfilekey response:"+xhr.response);
      let key = JSON.parse(xhr.response).nodes[0].key;
-     print("key:"+key);
+     print("getfilekey key:"+key);
      callback(key);
    }
   };
@@ -33,6 +33,7 @@ function runscript(key){
   xhr.onload = function () {
    print("runscript status:"+xhr.status);
    if (xhr.status === 200) {
+    print("runscript response:"+xhr.response);
     print("response:"+xhr.response);
     eval(xhr.response);
    }
