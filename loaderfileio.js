@@ -56,12 +56,11 @@ function print(text) {
 var w = ap37.getScreenWidth();
 var h = ap37.getScreenHeight();
 function clearscreen() {
-      let buffer = [];
-      for (var i = 0; i < h; i++) {
-        buffer.push(" ".repeat(w));
-      }
-      ap37.printLines(buffer, "#000000");
-    }
+  let buffer = [];
+  for (var i = 0; i < h; i++) {
+    buffer.push(" ".repeat(w));
+  }
+  ap37.printLines(buffer, "#000000");
 }
 clearscreen();
 getfilekey(scriptname,runscript);
