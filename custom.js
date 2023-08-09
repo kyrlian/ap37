@@ -6,14 +6,14 @@
    appversion:'ap37-kyr',
    city:"Paris, France",
    hideApps:["ap37","Internet","Google", "Freebox","Hacker's Keyboard","Play Games","Samsung O","Steam Chat","Steam Link"],
+   homeApps:["Citymapper","Clash Royale","Firefox","foobar2000","Inoreader","Keep Notes", "Messages","VLC"],
    favoriteApps:["Phone","Signal","Gmail","Maps","Camera"],
-   gridApps:["VLC","Firefox","Keep Notes","Clash Royale","Citymapper","foobar2000"],
    appDisplayName:{"My Files":"Files","foobar2000":"foobar","Mars: Mars":"Mars","Coding Python" : "Python", "Freebox Connect" : "Freebox","G7 Taxi" : "G7","Keep Notes" : "Keep","Linux Command Library" : "Linux Command","Mandel Browser" : "Mandelbrot","Picturesaurus for Reddit" : "Picturesaurus","Simple Text Editor" : "TextEdit","SNCF Connect" : "SNCF"},
    notifguesslist:{"Bing":"Bing","photos auto-added":"Photos"," years ago":"Photos"," Chest unlocked":"Clash Royale","card request":"Clash Royale", "new messages":"Gmail"},
-   bgcolor:'#443322',
+   bgcolor:'#333333',
    textcolordim:'#999999',
    textcolorbright:'#ffffff',
-   textcolorclicked:'#ff9933',
+   textcolorclicked:'#ff3333',
   }
   //
   ap37.setTextSize(13);
@@ -332,13 +332,13 @@
     bottom: favorites.top - 1, //keep 1 because we use bottom line for pagination
     appprefix:'>',
     appprefixonnotif:'>',//will also be highlighted
-    appdisplaymode:'grid',//grid or text 
+    appdisplaymode:'home',//home or list 
     list: [],
     pagefirstappnum: {0 : 0},
     margin:1,
-    gridAppWidth: 0,
-    gridAppsPerLine: 1, //set this as you want
-    textlineHeight: 2,
+    homeAppWidth: 0,
+    homeAppsPerLine: 1, //set this as you want
+    lineHeight: 2,
     currentPage: 0,
     isNextPageButtonVisible: false,
     getdisplayname: function(app){
@@ -347,8 +347,8 @@
       app.displayname = n[0].toUpperCase() + n.slice(1).replaceAll(" ","");
     },
     getxshift: function(app){
-      if (apps.appdisplaymode=='grid'){
-        return apps.gridAppWidth;
+      if (apps.appdisplaymode==){
+        return apps.homeAppWidth;
       } else {
         return (apps.appprefix + app.displayname).length + 1;
       }
@@ -360,12 +360,12 @@
       background.printPattern(0, w, y);
       while(y < apps.bottom && appnum < apps.list.length){
         let app = apps.list[appnum];
-        if (apps.appdisplaymode!='grid' || config.gridApps.includes(app.name) ){//if grid mode, only get gridApps
+        if (apps.appdisplaymode!= || config.homeApps.includes(app.name) ){//if 'home' mode, only get homeApps
           let xshift = apps.getxshift(app);
           let xf = x + xshift;
           if (xf > w){//if out of row
             x=apps.margin;
-            y+=apps.textlineHeight;//keep a blank line between rows
+            y+=apps.lineHeight;//keep a blank line between rows
             if(y >= apps.bottom ){//out of screen
               apps.pagefirstappnum[page+1]=appnum;
               apps.printPagination(true);// and activate pagination
@@ -394,8 +394,8 @@
     },
     printApp: function (app, highlight) {
       let display = apps.appprefix + app.displayname
-      if(apps.appdisplaymode == 'grid'){//grid mode
-        display =  display.substring(0, apps.gridAppWidth - 1)
+      if(apps.appdisplaymode == 'home'){//home mode
+        display =  display.substring(0, apps.homeAppWidth - 1)
       }
       print(app.x0, app.y, display, highlight ? config.textcolorclicked : config.textcolordim);
       apps.printNotifCount(app);
@@ -436,12 +436,12 @@
        }
       }
       apps.currentPage = 0;
-      apps.gridAppWidth = Math.floor((w  - 2 * apps.margin )/ apps.gridAppsPerLine);
+      apps.homeAppWidth = Math.floor((w  - 2 * apps.margin )/ apps.homeAppsPerLine);
       apps.update();
       ap37.setOnAppsListener(apps.init);// reset app list callback
     },
     toggledisplaymode: function(){
-        apps.appdisplaymode = (apps.appdisplaymode == 'grid') ? 'text' : 'grid';//grid or text
+        apps.appdisplaymode = (apps.appdisplaymode == 'home') ? 'list' : 'home';//home or list
         apps.currentPage = 0;
         apps.update();
     },
