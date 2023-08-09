@@ -16,7 +16,7 @@ function getfilekey(filename,callback){
    if (xhr.status === 200) {
      print("getfilekey response:"+xhr.response);
      let nodes = JSON.parse(xhr.response).nodes;
-     if (nodes.length) >0){
+     if (nodes.length >0){
        let key = nodes[0].key;
        print("getfilekey key:"+key);
        callback(key);
@@ -35,7 +35,6 @@ function runscript(key){
   const xhr = new XMLHttpRequest();
   xhr.withCredentials = true;
   xhr.open("GET", fileurl);
-  xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
   xhr.setRequestHeader("Authorization", "Bearer " + fileioapikey);
   xhr.onload = function () {
    print("runscript status:"+xhr.status);
@@ -54,4 +53,15 @@ function print(text) {
   ap37.print(x, y, text, "#ffffff");
 }
 
+var w = ap37.getScreenWidth();
+var h = ap37.getScreenHeight();
+function clearscreen() {
+      let buffer = [];
+      for (var i = 0; i < h; i++) {
+        buffer.push(" ".repeat(w));
+      }
+      ap37.printLines(buffer, "#000000");
+    }
+}
+clearscreen();
 getfilekey(scriptname,runscript);
