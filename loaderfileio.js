@@ -29,10 +29,12 @@ function getfilekey(filename,callback){
 }
 
 function runscript(key){
-  const data = "key="+key;
+  const data = null;
+  const fileurl = "https://file.io/"+key
+  print("runscript fileurl:"+fileurl);
   const xhr = new XMLHttpRequest();
   xhr.withCredentials = true;
-  xhr.open("GET", "https://file.io/");
+  xhr.open("GET", fileurl);
   xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
   xhr.setRequestHeader("Authorization", "Bearer " + fileioapikey);
   xhr.onload = function () {
