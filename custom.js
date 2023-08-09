@@ -7,6 +7,7 @@
    city:"Paris, France",
    hideApps:["ap37","Internet","Google", "Freebox","Hacker's Keyboard","Play Games","Samsung O","Steam Chat","Steam Link"],
    favoriteApps:["Phone","Signal","Gmail","Maps","Camera"],
+   gridApps:["Firefox","Keep Notes","Clash Royale","Citymapper","foobar2000"],
    appDisplayName:{"foobar2000":"foobar","Mars: Mars":"Mars","Coding Python" : "Python", "Freebox Connect" : "Freebox","G7 Taxi" : "G7","Keep Notes" : "Keep","Linux Command Library" : "Linux Command","Mandel Browser" : "Mandelbrot","Picturesaurus for Reddit" : "Picturesaurus","Simple Text Editor" : "TextEdit","SNCF Connect" : "SNCF"},
    notifguesslist:{"Bing":"Bing","photos auto-added":"Photos"," years ago":"Photos"," Chest unlocked":"Clash Royale","card request":"Clash Royale", "new messages":"Gmail"},
    bgcolor:'#443322',
@@ -340,6 +341,7 @@
     gridAppWidth: 6,
     gridAppsPerLine: 0,
     gridAppsPerPage: 0,
+    textlineHeight: 2,
     currentPage: 0,
     isNextPageButtonVisible: false,
     getdisplayname: function(app){
@@ -354,12 +356,14 @@
           background.printPattern(x, x + apps.gridAppWidth, y);
           if (appPos < apps.list.length) {
             var app = apps.list[appPos];
-            app.y = y;
-            app.x0 = x;
-            app.xf = x + apps.gridAppWidth;
-            app.page = page;
-            apps.printApp(app, false);
-            appPos++;
+            if (config.gridApps.includes(app.name)){
+              app.y = y;
+              app.x0 = x;
+              app.xf = x + apps.gridAppWidth;
+              app.page = page;
+              apps.printApp(app, false);
+              appPos++;
+            }
           }
         }
       }
@@ -374,7 +378,7 @@
         let xf = x + (apps.appprefix + app.displayname).length;
         if (xf > w){//if out of row
           x=0;
-          y+=2;//keep a blank line between rows
+          y+=apps.textlineHeight;//keep a blank line between rows
           if(y>= apps.bottom ){//out of screen
             apps.pagefirstappnum[page+1]=appnum;
             apps.printPagination(true);// and activate pagination
