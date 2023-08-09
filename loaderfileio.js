@@ -1,7 +1,8 @@
 
 
-const scriptname = "custom.js";
 const fileioapikey = "4NA6HxxEZ21";
+
+const scriptname = "custom.js";
 
 function getfilekey(filename,callback){
   const data = "search="+filename;
@@ -11,11 +12,11 @@ function getfilekey(filename,callback){
   xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
   xhr.setRequestHeader("Authorization", "Bearer "+fileioapikey);
   xhr.onload = function () {
-   ap37.print(2, "getfilekey status:"xhr.status);
+   print("getfilekey status:"+xhr.status);
    if (xhr.status === 200) {
-     ap37.print(4, "response:"+xhr.response);
+     print("response:"+xhr.response);
      let key = JSON.parse(xhr.response).nodes[0].key
-     ap37.print(6, "key:"key);
+     print("key:"+key);
      callback(key)
    }
   };
@@ -26,7 +27,7 @@ function runscript(key){
   const xhr = new XMLHttpRequest();
   xhr.withCredentials = true;
   xhr.onload = function () {
-   ap37.print(8, "runscript status:"xhr.status);
+   print("runscript status:"+xhr.status);
    if (xhr.status === 200) {
     eval(xhr.response)
    }
@@ -36,8 +37,11 @@ function runscript(key){
   xhr.send(null);
 }
 
-function print(y, text) {
-  ap37.print(0, y, text, "#ffffff#);
+var x = 1;
+var y = 0;
+function print(text) {
+  y += 2;
+  ap37.print(x, y, text, "#ffffff");
 }
 
 getfilekey(scriptname,runscript);
