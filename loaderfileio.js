@@ -15,9 +15,14 @@ function getfilekey(filename,callback){
    print("getfilekey status:"+xhr.status);
    if (xhr.status === 200) {
      print("getfilekey response:"+xhr.response);
-     let key = JSON.parse(xhr.response).nodes[0].key;
-     print("getfilekey key:"+key);
-     callback(key);
+     let nodes = JSON.parse(xhr.response).nodes;
+     if (nodes.length) >0){
+       let key = nodes[0].key;
+       print("getfilekey key:"+key);
+       callback(key);
+     } else {
+      print("file "+filename+" not found");
+     }
    }
   };
   xhr.send(data);
@@ -34,7 +39,6 @@ function runscript(key){
    print("runscript status:"+xhr.status);
    if (xhr.status === 200) {
     print("runscript response:"+xhr.response);
-    print("response:"+xhr.response);
     eval(xhr.response);
    }
   };
