@@ -358,26 +358,28 @@
       background.printPattern(0, w, y);
       while(y < apps.bottom && appnum < apps.list.length){
         let app = apps.list[appnum];
-        let xshift = getxshift(app);
-        let xf = x + xshift;
-        if (xf > w){//if out of row
-          x=0;
-          y+=apps.textlineHeight;//keep a blank line between rows
-          if(y>= apps.bottom ){//out of screen
-            apps.pagefirstappnum[page+1]=appnum;
-            apps.printPagination(true);// and activate pagination
-          }else{
-            background.printPattern(0, w, y);
+        if (apps.appdisplaymode!='grid' || config.gridApps.includes(app.name) ){//if grid mode, only get gridApps
+          let xshift = getxshift(app);
+          let xf = x + xshift;
+          if (xf > w){//if out of row
+            x=0;
+            y+=apps.textlineHeight;//keep a blank line between rows
+            if(y>= apps.bottom ){//out of screen
+              apps.pagefirstappnum[page+1]=appnum;
+              apps.printPagination(true);// and activate pagination
+            }else{
+              background.printPattern(0, w, y);
+            }
           }
-        }
-        if(y < apps.bottom){
-          app.x0 = x;
-          app.y = y;
-          app.xf = x + xshift;
-          app.page = page;
-          apps.printApp(app, false);
-          x = app.xf;
-          appnum++;
+          if(y < apps.bottom){
+            app.x0 = x;
+            app.y = y;
+            app.xf = x + xshift;
+            app.page = page;
+            apps.printApp(app, false);
+            x = app.xf;
+            appnum++;
+          }
         }
       }
       if(page==0 && y < apps.bottom ){
