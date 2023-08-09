@@ -1,6 +1,6 @@
 source ./.env
-curl --request POST \
+curl -s --request POST \
   --url 'https://file.io/?=' \
   --header "Authorization: Bearer ${fileioapikey}" \
   --header 'Content-Type: multipart/form-data' \
-  --form file=@$1
+  --form file=@$1 | jq '.link'
