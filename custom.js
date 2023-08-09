@@ -214,7 +214,7 @@
         // update notif counter on apps with notifications
         for ( var j=0;j<apps.list.length;j++){
           var app = apps.list[j]
-          if (app.name in notificationcounter){
+          if (app.name in notificationcounter && app.page == apps.currentPage && app.displaymode == apps.appdisplaymode){
               app.notifcount = notificationcounter[app.name]
               apps.printNotifCount(app)
           }
@@ -378,6 +378,7 @@
             app.y = y;
             app.xf = x + xshift;
             app.page = page;
+            app.displaymode = apps.appdisplaymode;// to test on touch
             apps.printApp(app, false);
             x = app.xf;
           }
@@ -451,7 +452,7 @@
       if(y >= apps.top && y < apps.bottom){
         for (var i = 0; i<apps.list.length; i++){
           var app = apps.list[i];
-          if (app.page == apps.currentPage){
+          if (app.page == apps.currentPage && app.displaymode == apps.appdisplaymode){
             if (y >= app.y && y <= app.y + 1 && x >= app.x0 && x <= app.xf) {
               apps.printApp(app, true);
               ap37.openApp(app.id);
