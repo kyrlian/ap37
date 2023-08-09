@@ -14,8 +14,9 @@ function getfilekey(filename,callback){
   xhr.onload = function () {
    print("getfilekey status:"+xhr.status);
    if (xhr.status === 200) {
-     print("getfilekey response:"+xhr.response);
-     let nodes = JSON.parse(xhr.response).nodes;
+     let response = xhr.response;
+     print("getfilekey response:"+response);
+     let nodes = JSON.parse(response).nodes;
      if (nodes.length >0){
        let key = nodes[0].key;
        print("getfilekey key:"+key);
@@ -29,22 +30,19 @@ function getfilekey(filename,callback){
 }
 
 function runscript(key){
-  const data = null;
   const fileurl = "https://file.io/"+key
   print("runscript fileurl:"+fileurl);  
   const xhr = new XMLHttpRequest();
-  xhr.withCredentials = true;
   xhr.open("GET", fileurl);
-  xhr.setRequestHeader("Authorization", "Bearer " + fileioapikey);
-  xhr.addEventListener("readystatechange", function () {
-    print("runscript readyState:"+this.readyState);
-    if (this.readyState === this.DONE) {
-      let response = this.responseText;
-      printlines("runscript response:"+response;
-      eval(response);
+  xhr.onload = function () {
+   print("getfilekey status:"+xhr.status);
+   if (xhr.status === 200) {
+     let response = xhr.response;
+     printlines("runscript response:"+response);
+     eval(response);
     }
   });
-  xhr.send(data);
+  xhr.send(null);
 }
 
 var x = 1;
