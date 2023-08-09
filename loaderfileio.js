@@ -41,7 +41,7 @@ function runscript(key){
      printlines("runscript response:"+response);
      eval(response);
     }
-  });
+  };
   xhr.send(null);
 }
 
