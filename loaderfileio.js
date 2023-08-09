@@ -8,7 +8,7 @@ function getfilekey(filename,callback){
   const data = "search="+filename;
   const xhr = new XMLHttpRequest();
   xhr.withCredentials = true;
-  xhr.open("GET", "https://file.io/");
+  xhr.open("GET", "https://file.io/", true);
   xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
   xhr.setRequestHeader("Authorization", "Bearer " + fileioapikey);
   xhr.onload = function () {
@@ -33,7 +33,7 @@ function runscript(key){
   const fileurl = "https://file.io/"+key
   print("runscript fileurl:"+fileurl);  
   const xhr = new XMLHttpRequest();
-  xhr.open("GET", fileurl);
+  xhr.open("GET", fileurl, true);
   xhr.onload = function () {
    print("getfilekey status:"+xhr.status);
    if (xhr.status === 200) {
