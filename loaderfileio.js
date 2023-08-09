@@ -10,31 +10,34 @@ function getfilekey(filename,callback){
   xhr.withCredentials = true;
   xhr.open("GET", "https://file.io/");
   xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
-  xhr.setRequestHeader("Authorization", "Bearer "+fileioapikey);
+  xhr.setRequestHeader("Authorization", "Bearer " + fileioapikey);
   xhr.onload = function () {
    print("getfilekey status:"+xhr.status);
    if (xhr.status === 200) {
      print("response:"+xhr.response);
-     let key = JSON.parse(xhr.response).nodes[0].key
+     let key = JSON.parse(xhr.response).nodes[0].key;
      print("key:"+key);
-     callback(key)
+     callback(key);
    }
   };
   xhr.send(data);
 }
 
 function runscript(key){
+  const data = "key="+key;
   const xhr = new XMLHttpRequest();
   xhr.withCredentials = true;
+  xhr.open("GET", "https://file.io/");
+  xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+  xhr.setRequestHeader("Authorization", "Bearer " + fileioapikey);
   xhr.onload = function () {
    print("runscript status:"+xhr.status);
    if (xhr.status === 200) {
-    eval(xhr.response)
+    print("response:"+xhr.response);
+    eval(xhr.response);
    }
   };
-  xhr.open("GET", "https://file.io/"+key);
-  xhr.setRequestHeader("Authorization", "Bearer "+fileioapikey);
-  xhr.send(null);
+  xhr.send(data);
 }
 
 var x = 1;
