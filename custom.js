@@ -347,7 +347,7 @@
       app.displayname = n[0].toUpperCase() + n.slice(1).replaceAll(" ","");
     },
     getxshift: function(app){
-      if (apps.appdisplaymode==){
+      if (apps.appdisplaymode=='home'){
         return apps.homeAppWidth;
       } else {
         return (apps.appprefix + app.displayname).length + 1;
@@ -360,7 +360,7 @@
       background.printPattern(0, w, y);
       while(y < apps.bottom && appnum < apps.list.length){
         let app = apps.list[appnum];
-        if (apps.appdisplaymode!= || config.homeApps.includes(app.name) ){//if 'home' mode, only get homeApps
+        if (apps.appdisplaymode!='home' || config.homeApps.includes(app.name) ){//if 'home' mode, only get homeApps
           let xshift = apps.getxshift(app);
           let xf = x + xshift;
           if (xf > w){//if out of row
