@@ -38,7 +38,7 @@
       favorites.onTouch(x, y);
       footer.onTouch(x,y);
     });
-    debug("init done");
+    //debug("init done");
   }
 
   // modules
@@ -335,8 +335,9 @@
     appdisplaymode:'text',//grid or text 
     list: [],
     pagefirstappnum: {0 : 0},
+    margin:1,
     gridAppWidth: 0,
-    gridAppsPerLine: 4, //set this as you want
+    gridAppsPerLine: 2, //set this as you want
     textlineHeight: 2,
     currentPage: 0,
     isNextPageButtonVisible: false,
@@ -347,14 +348,14 @@
     },
     getxshift: function(app){
       if (apps.appdisplaymode=='grid'){
-        return gridAppWidth;
+        return apps.gridAppWidth;
       } else {
         return (apps.appprefix + app.displayname).length + 1;
       }
     },
     printPage: function (page) {
       let appnum = apps.pagefirstappnum[page];
-      let x = 0;
+      let x = apps.margin;
       let y = apps.top;
       background.printPattern(0, w, y);
       while(y < apps.bottom && appnum < apps.list.length){
@@ -362,8 +363,8 @@
         if (apps.appdisplaymode!='grid' || config.gridApps.includes(app.name) ){//if grid mode, only get gridApps
           let xshift = apps.getxshift(app);
           let xf = x + xshift;
-          if (xf > w){//if out of row
-            x=0;
+          if (xf > w-apps.margin){//if out of row
+            x=apps.margin;
             y+=apps.textlineHeight;//keep a blank line between rows
             if(y >= apps.bottom ){//out of screen
               apps.pagefirstappnum[page+1]=appnum;
@@ -412,7 +413,7 @@
     },
     printPagination: function (onoff) {
       if(onoff == ""){//if call with neither true or false, just print
-        onoff = apps.isNextPageButtonVisible;
+        onoff = apps.isNextPageButtonVisible;// TODO used ?
       }
       if(onoff){
         apps.isNextPageButtonVisible = true;// activate pagination
@@ -434,7 +435,7 @@
        }
       }
       apps.currentPage = 0;
-      apps.gridAppWidth = Math.floor(w / apps.gridAppsPerLine);
+      apps.gridAppWidth = Math.floor((w  - 2 * apps.margin )/ apps.gridAppsPerLine);
       apps.update();
       ap37.setOnAppsListener(apps.init);// reset app list callback
     },
