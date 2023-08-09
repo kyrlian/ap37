@@ -1,4 +1,4 @@
-
+// DRAFT - currently only getfilekey works, runscript gets an HTML page to download the script instead of the script itself.
 
 const fileioapikey = "4NA6HxxEZ21";
 
