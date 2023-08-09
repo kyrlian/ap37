@@ -10,7 +10,7 @@ function getfilekey(filename,callback){
   xhr.setRequestHeader("Authorization", bearer);
   xhr.onload = function () {
    if (xhr.status === 200) {
-    callback(xhr.response.nodes[0].key)
+    callback(JSON.parse(xhr.response).nodes[0].key)
    }
   };
   xhr.send(data);
