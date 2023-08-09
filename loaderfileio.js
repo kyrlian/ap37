@@ -39,6 +39,7 @@ function runscript(key){
   xhr.onload = function () {
    print("runscript status:"+xhr.status);
    if (xhr.status === 200) {
+    print("runscript xhr:"+xhr);
     print("runscript response:"+xhr.response);
     eval(xhr.response);
    }
@@ -49,8 +50,16 @@ function runscript(key){
 var x = 1;
 var y = 0;
 function print(text) {
-  y += 2;
+  y ++;
   ap37.print(x, y, text, "#ffffff");
+}
+
+function printlines(text){
+  let pos=0
+  while(pos < text.length){    
+    print(text.substring(pos, Math.min(pos+w,text.length));
+    pos += w;
+  }
 }
 
 var w = ap37.getScreenWidth();
