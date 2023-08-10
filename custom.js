@@ -37,6 +37,7 @@
       notifications.onTouch(x, y);
       favorites.onTouch(x, y);
       footer.onTouch(x,y);
+      
     });
     //debug("init done");
   }
@@ -505,9 +506,20 @@
       py++;
     }
   }
-
-  function createScroller(x0, xf, ay, str, acolor){
+  var scrollers = {
+    list : [],
+    onTouch: function(x, y){
+     // detect if a scroller is touched, if yes start/stop it
+     for ( i=0; i< scrollers.list.length; i++){
+       sc = scrollers.list[i];
+       if ( y == sc.y && x => sc.x && x < sc.x + sc.width){
+         sc.toggle();
+       }
+     } 
+    },
+   create: function(x0, xf, ay, astr, acolor){
     var scroller = {
+      str: astr,
       text: "",
       x: x0,
       width: xf - x0,
@@ -516,15 +528,28 @@
       d: 0,
       step: 2,
       interval: null,
-      init: function(){
+      running: true,
+      start: function(){
+        scroller.settext(scroller.str);
         scroller.interval = setInterval(scroller.update, 1000);
+        scroller.running = true;
       },
-      clear: function(){
+      stop: function(){
         clearInterval(scroller.interval);
+        print(scroller.x, scroller.y, scroller.str, scroller.color);
+        scroller.running = false;
+      },
+      toggle: function(){
+        if ( scroller.running ) {
+          scroller.stop();
+        } else {
+          scroller.start();
+        }
       },
       settext: function(str){
         let s = str + " - ";
         scroller.text = s.repeat( Math.ceil( scroller.width / s.length ));
+        scroller.update();
       },
       update: function(){
         let stext = scroller.text.substring(scroller.d, Math.min( scroller.d + scroller.width, scroller.text.length ) );
@@ -538,12 +563,14 @@
         }
       }
     };
-    scroller.init();
-    scroller.settext(str);
+    scrollers.list.append(scroller);
+    scroller.start();
     return scroller;
   }
-  // let a = createScroller(0,w,10, "text 122344669988","#ff6666");
-  // let b = createScroller(0,w,20, "other jjiiikj","#6666ff");
+ };
+
+  // let a = scrollers.create(0,w,10, "text 122344669988","#ff6666");
+  // let b = scrollers.create(0,w,20, "other jjiiikj","#6666ff");
   
   function get(url, callback) {
     var xhr = new XMLHttpRequest();
@@ -579,7 +606,7 @@
   let debugScroller = null;//dont init at load - only when needed
   function debug(str){
     if (debugScroller === null){//init at first call
-      debugScroller = createScroller(0, w, h-2, JSON.stringify(str), '#ff3333');
+      debugScroller = scrollers.create(0, w, h-2, JSON.stringify(str), '#ff3333');
     }else{
       debugScroller.settext(JSON.stringify(str));
     }
