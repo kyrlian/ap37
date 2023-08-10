@@ -510,9 +510,9 @@
     list : [],
     onTouch: function(x, y){
      // detect if a scroller is touched, if yes start/stop it
-     for ( i=0; i< scrollers.list.length; i++){
-       sc = scrollers.list[i];
-       if ( y == sc.y && x => sc.x && x < sc.x + sc.width){
+     for ( let i=0; i< scrollers.list.length; i++){
+       let sc = scrollers.list[i];
+       if ( y == sc.y && x >= sc.x && x < sc.x + sc.width){
          sc.toggle();
        }
      } 
@@ -563,7 +563,7 @@
         }
       }
     };
-    scrollers.list.append(scroller);
+    scrollers.list.push(scroller);
     scroller.start();
     return scroller;
   }
@@ -604,11 +604,15 @@
   }
 
   let debugScroller = null;//dont init at load - only when needed
-  function debug(str){
+  function debug(obj){
+    let str = ""+obj;
+    if ( typeof(obj) == "object" ){
+      str = JSON.stringify(obj);
+    }
     if (debugScroller === null){//init at first call
-      debugScroller = scrollers.create(0, w, h-2, JSON.stringify(str), '#ff3333');
+      debugScroller = scrollers.create(0, w, h-2, str, '#ff3333');
     }else{
-      debugScroller.settext(JSON.stringify(str));
+      debugScroller.settext( str );
     }
     // print(0, h-2, JSON.stringify(str), '#ff3333');
   }
