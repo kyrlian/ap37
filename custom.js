@@ -37,7 +37,7 @@
       notifications.onTouch(x, y);
       favorites.onTouch(x, y);
       footer.onTouch(x,y);
-      
+      scrollers.onTouch(x,y);
     });
     //debug("init done");
   }
