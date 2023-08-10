@@ -21,7 +21,7 @@
   var h = ap37.getScreenHeight();
 
   function debugstuff(){//use this to display debug info in footer
-    debug("important message ");
+    debug("important test message");
   }
 
   function init() {
@@ -156,7 +156,7 @@
     onTouch: function (x, y) {
       if(y >= footer.top && y < footer.bottom ){
         settings.onTouch(x,y);
-        debugstuff();// run debug display
+        debugstuff();// run debug display on footer touch
       }
     }
   };
@@ -506,9 +506,9 @@
     }
   }
 
-  function createScroller(x0, xf, ay, atext, acolor){
+  function createScroller(x0, xf, ay, str, acolor){
     var scroller = {
-      text: (atext + " - ").repeat( Math.ceil((xf-x0) / (atext+" - ").length )),
+      text: "",
       x: x0,
       width: xf - x0,
       y: ay,
@@ -521,6 +521,10 @@
       },
       clear: function(){
         clearInterval(scroller.interval);
+      },
+      settext: function(str){
+        let s = str + " - ";
+        scroller.text = s.repeat( Math.ceil( scroller.width / s.length ));
       },
       update: function(){
         let stext = scroller.text.substring(scroller.d, Math.min( scroller.d + scroller.width, scroller.text.length ) );
@@ -535,6 +539,7 @@
       }
     };
     scroller.init();
+    scroller.settext(str);
     return scroller;
   }
   // let a = createScroller(0,w,10, "text 122344669988","#ff6666");
@@ -571,8 +576,13 @@
     return result;
   }
 
+  let debugScroller = null;//dont init at load - only when needed
   function debug(str){
-    let s = createScroller(0, w, h-2, str, '#ff3333');
+    if (debugScroller === null){//init at first call
+      debugScroller = createScroller(0, w, h-2, JSON.stringify(str), '#ff3333');
+    }else{
+      debugScroller.settext(JSON.stringify(str));
+    }
     // print(0, h-2, JSON.stringify(str), '#ff3333');
   }
 
