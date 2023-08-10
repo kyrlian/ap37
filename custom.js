@@ -21,7 +21,7 @@
   var h = ap37.getScreenHeight();
 
   function debugstuff(){//use this to display debug info in footer
-   // debug("message"))
+    debug("important message ");
   }
 
   function init() {
@@ -508,31 +508,37 @@
 
   function createScroller(x0, xf, ay, atext, acolor){
     var scroller = {
-      text: atext,
+      text: (atext + " - ").repeat( Math.ceil((xf-x0) / (atext+" - ").length )),
       x: x0,
       width: xf - x0,
       y: ay,
       color: acolor,
       d: 0,
+      step: 2,
       interval: null,
       init: function(){
-        this.interval = setInterval(this.update, 1000);
+        scroller.interval = setInterval(scroller.update, 1000);
       },
       clear: function(){
-        clearInterval(this.interval);
+        clearInterval(scroller.interval);
       },
       update: function(){
-        let stext = this.text.substring(this.d, Math.min( this.d + this.width, this.text.length ) )+" ";
-        if (stext.length < this.width){
-          stext += this.text.substring(0, this.width - stext.length);
+        let stext = scroller.text.substring(scroller.d, Math.min( scroller.d + scroller.width, scroller.text.length ) );
+        if (stext.length < scroller.width){
+          stext += scroller.text.substring(0, scroller.width - stext.length);
         }
-        print(x, y, stext, color);
-        d++;
+        print(scroller.x, scroller.y, stext, scroller.color);
+        scroller.d += scroller.step;
+        if ( scroller.d > scroller.text.length){
+          scroller.d = 0;
+        }
       }
     };
     scroller.init();
     return scroller;
   }
+  // let a = createScroller(0,w,10, "text 122344669988","#ff6666");
+  // let b = createScroller(0,w,20, "other jjiiikj","#6666ff");
   
   function get(url, callback) {
     var xhr = new XMLHttpRequest();
