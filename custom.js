@@ -21,7 +21,7 @@
   var h = ap37.getScreenHeight();
 
   function debugstuff(){//use this to display debug info in footer
-   // debug(JSON.stringify(ap37.getNotifications()))
+   // debug("message"))
   }
 
   function init() {
@@ -53,7 +53,7 @@
       return line;
     },
     printPattern: function (x0, xf, y) {//redraw background for a single line
-      print(x0, y, background.randomline(xf), config.bgcolor);
+      print(x0, y, background.randomline(xf-x0), config.bgcolor);
     },
     init: function () {
       let buffer = []
@@ -496,6 +496,44 @@
     ap37.print(x, y, text, rcolor);
   }
 
+  function printlines(x, y, text, color){
+    let pos=0;
+    let py=y;
+    while(pos < text.length){    
+      print(x, py, text.substring(pos, Math.min(pos+w-x,text.length)), color);
+      pos += (w-x);
+      py++;
+    }
+  }
+
+  function createScroller(x0, xf, ay, atext, acolor){
+    var scroller = {
+      text: atext,
+      x: x0,
+      width: xf - x0,
+      y: ay,
+      color: acolor,
+      d: 0,
+      interval: null,
+      init: function(){
+        this.interval = setInterval(this.update, 1000);
+      },
+      clear: function(){
+        clearInterval(this.interval);
+      },
+      update: function(){
+        let stext = this.text.substring(this.d, Math.min( this.d + this.width, this.text.length ) )+" ";
+        if (stext.length < this.width){
+          stext += this.text.substring(0, this.width - stext.length);
+        }
+        print(x, y, stext, color);
+        d++;
+      }
+    };
+    scroller.init();
+    return scroller;
+  }
+  
   function get(url, callback) {
     var xhr = new XMLHttpRequest();
     xhr.open('GET', url, true);
@@ -528,7 +566,8 @@
   }
 
   function debug(str){
-    print(0,h-2,""+str,'#ff3333')
+    let s = createScroller(0, w, h-2, str, '#ff3333');
+    // print(0, h-2, JSON.stringify(str), '#ff3333');
   }
 
   init();
