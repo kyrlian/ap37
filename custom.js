@@ -147,11 +147,11 @@
 
 
   var footer = {
-    heigth:1,
-    top:h-1,
+    heigth:2,
+    top:h-2,
     bottom:h,
     init: function () {
-      print(3, footer.top, config.appversion);//bottom left
+      print(3, footer.bottom-1, config.appversion);//bottom left
       settings.init()
     },
     onTouch: function (x, y) {
@@ -168,7 +168,7 @@
       settings.update();
     },
     update: function () {
-      print(w - 6, footer.top, apps.appdisplaymode.toUpperCase());
+      print(w - 6, footer.bottom-1, apps.appdisplaymode.toUpperCase());
     },
     onTouch: function (x, y) {
       if (x >= w-6){//y tested by footer
@@ -536,7 +536,7 @@
       },
       stop: function(){
         clearInterval(scroller.interval);
-        print(scroller.x, scroller.y, scroller.str, scroller.color);
+      //  print(scroller.x, scroller.y, scroller.str, scroller.color);
         scroller.running = false;
       },
       toggle: function(){
