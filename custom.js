@@ -21,7 +21,7 @@
   var h = ap37.getScreenHeight();
 
   function debugstuff(){//use this to display debug info in footer
-    debug("important test message");
+    debug("important■test■message");
   }
 
   function init() {
@@ -29,6 +29,7 @@
     header.init();
     apps.init();// do apps before notifications
     notifications.init();
+    asciiclock.init();
     favorites.init();
     footer.init();
     ap37.setOnTouchListener(function (x, y) {
@@ -104,6 +105,88 @@
         }
       }
     }
+  };
+
+
+  var asciiclock = { 
+  nums:[["■■■■■",
+         "■□□□■",
+         "■□□□■",
+         "■□□□■",
+         "■■■■■"],
+        ["■■■□□",
+         "□□■□□",
+         "□□■□□",
+         "□□■□□",
+         "■■■■■"],
+        ["■■■■■",
+         "□□□□■",
+         "□■■■□",
+         "■□□□□",
+         "■■■■■"],
+        ["■■■■■",
+         "□□□□■",
+         "□□■■□",
+         "□□□□■",
+         "■■■■■"],
+        ["■□□□■",
+         "■□□□■",
+         "■■■■■",
+         "□□□□■",
+         "□□□□■"],
+        ["■■■■■",
+         "■□□□□",
+         "■■■■■",
+         "□□□□■",
+         "■■■■■"],
+        ["■■■■■",
+         "■□□□□",
+         "■■■■■",
+         "■□□□■",
+         "■■■■■"],
+        ["■■■■■",
+         "□□□□■",
+         "□□□□■",
+         "□□□□■",
+         "□□□□■"],
+        ["■■■■■",
+         "■□□□■",
+         "■■■■■",
+         "■□□□■",
+         "■■■■■"],
+        ["■■■■■",
+         "■□□□■",
+         "■■■■■",
+         "□□□□■",
+         "■■■■■"],
+        ["□",
+         "■",
+         "□",
+         "■",
+         "□"]],
+     top : 10,
+     left: 18,
+     init: function () {
+      asciiclock.update();
+      setInterval(asciiclock.update, 60000);
+     },
+     printnum: function (x,y,n) {
+      for( let i=0;i<n.length;i++){
+        print(x, y+i, n[i]);
+      }
+     },
+     update: function () {
+      var d = ap37.getDate();
+      let h1 = asciiclock.nums[ Math.floor ( d.hour / 10 ) ];
+      let h2 = asciiclock.nums[ d.hour % 10 ];
+      let m1 = asciiclock.nums[ Math.floor ( d.minute / 10 ) ];
+      let m2 = asciiclock.nums[ d.minute % 10 ];
+      asciiclock.printnum( asciiclock.left,asciiclock.top, h1 );
+      asciiclock.printnum( asciiclock.left + 6,asciiclock.top, h2 );
+      asciiclock.printnum( asciiclock.left + 12,asciiclock.top, asciiclock.nums[10] );
+      asciiclock.printnum( asciiclock.left + 14,asciiclock.top, m1 );
+      asciiclock.printnum( asciiclock.left + 20,asciiclock.top, m2 );
+     }
   };
 
   var meteo = {
@@ -382,7 +465,9 @@
               apps.pagefirstappnum[page+1]=appnum;
               apps.printPagination(true);// and activate pagination
             } else {
-              background.printPattern(0, w, y);
+              for( let i=0; i< apps.lineHeight ; i++){
+                background.printPattern(0, w, y-i);// clean new line
+              }
             }
           }
           if(y < apps.bottom){
@@ -459,6 +544,9 @@
     },
     update: function() {
       apps.printPage(apps.currentPage);
+      if ( apps.appdisplaymode == 'home' ){
+        asciiclock.update();
+      }
     },
     onTouch: function (x, y) {
       if(y >= apps.top && y < apps.bottom){
