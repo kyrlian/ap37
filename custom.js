@@ -243,10 +243,21 @@
         disp = disp.substring(0, length) + "... +" +
           (notifications.list.length -  notifications.height); //last notification with: name... number of remaining notifs
       }
-      print(0, notification.y, disp, highlight ? config.textcolorclicked : config.textcolorbright);// highlight is set on touch callback 
+      let ncolor = (highlight ? config.textcolorclicked : config.textcolorbright);
+      if ( disp.length > w){// if notif doesnt fit, create a scroller
+        if ( ! notification.scroller ){
+          notification.scroller = scrollers.create(0,w,notification.y,  disp, ncolor);
+        } else {
+          // already exists, might be clicked and need color update
+          notification.scroller.color = ncolor;
+        }
+      } else {
+         print(0, notification.y, disp, ncolor );// highlight is set on touch callback 
+      }
       if (highlight) {// if highlight set a timeout to reset to normal
         setTimeout(function () {
-          notifications.printNotification(notification, false);
+       // notifications.printNotification(notification, false);//hide it - its been clicked, will be removed soon
+          background.printPattern(0, w, notification.y);
         }, 1000);
       }
     },
