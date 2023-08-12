@@ -14,22 +14,44 @@
    textcolordim:'#999999',
    textcolorbright:'#ffffff',
    textcolorclicked:'#ff3333',
-  }
-  //
+  };
+  // screen size
   ap37.setTextSize(13);
   var w = ap37.getScreenWidth();
   var h = ap37.getScreenHeight();
 
+  // modules layout 
+  let layout={};
+  function resetlayout(){// TODO use below, see how to handle resize beetween home and list modes
+  layout.header = { top: 0, height: 2, bottom: 2, page: "all"};
+  layout.notifications = {  top: layout.header.bottom, height: 6, bottom: -1, page: "all"};
+  layout.footer = { top: -1, height: 2, bottom: h, page: "all"};
+  layout.favorites = { top: -1, height: 2, bottom: layout.footer.top, page: "all"};
+  layout.transmissions = { top: -1, height: 4, bottom: layout.favorites.top, page: "home"};
+  layout.market = { top: -1, height: 2, bottom: layout.transmissions.top, page: "home"};
+  layout.apps = { top: layout.notifications.bottom, height: -1, bottom: 2, page: "all"};
+  layout.asciiclock = { top: 0, height: 2, bottom: 2, left:-1, right: w, page: "home"};
+  for ( let lay in layout ){// handle variable sizes
+    let layinfo = layout[lay];
+    if ( layinfo.top == -1 ){ layinfo.top = layout.bottom - layout.height }
+    else if ( layinfo.height == -1 ){ layinfo.height = layout.bottom - layout.top }
+    else if ( layinfo.bottom == -1 ){ layinfo.bottom = layout.top + layout.height }
+  }}
+  resetlayout();
+
+  // easy debug
   function debugstuff(){//use this to display debug info in footer
     // debug("important■test■message"+" - ");
   }
 
+  // init all modules - will be run after all modules are declared
   function init() {
     background.init();
     header.init();
-    apps.init();// do apps before notifications
+    apps.init();// do apps before notifications to init apps list
     notifications.init();
     asciiclock.init();// do clock after apps
+    transmissions.init();
     favorites.init();
     footer.init();
     ap37.setOnTouchListener(function (x, y) {
@@ -38,15 +60,14 @@
       apps.onTouch(x, y);
       notifications.onTouch(x, y);
       asciiclock.onTouch(x, y);
+      transmissions.onTouch(x,y);
       favorites.onTouch(x, y);
       footer.onTouch(x,y);
       scrollers.onTouch(x,y);
     });
-    //debug("init done");
   }
 
   // modules
-
   var background = {
     bgchars:'-._ /',
     randomline: function(nbc){
@@ -69,7 +90,7 @@
   };
   
   var header = {
-    heigth:2,
+    heigth:layout["header"].height,
     top:0,
     bottom:2,
     init: function () {
@@ -453,14 +474,13 @@
     currentPage: 0,
     isNextPageButtonVisible: false,
     getbyname: function(n){
-     for ( var j=0;j<apps.list.length;j++){
+      for ( var j=0;j<apps.list.length;j++){
           let app = apps.list[j]
           if (app.name == n){
             return app;
           }
-        }
-     },
-
+      }
+    },
     getdisplayname: function(app){
       let n = app.name;
       if(n in config.appDisplayName){ n = config.appDisplayName[n]; };
@@ -600,6 +620,192 @@
   // TODO restore  markets
    
   // TODO restore  transmissions
+
+
+
+   var markets = {
+    update: function () {
+      get('https://api.cryptowat.ch/markets/prices', function (response) {
+        try {
+          var result = JSON.parse(response).result,
+            marketString =
+              'BTC' + Math.floor(result['market:kraken:btcusd']) +
+              ' BCH' + Math.floor(result['market:kraken:bchusd']) +
+              ' ETH' + Math.floor(result['market:kraken:ethusd']) +
+              ' ETC' + Math.floor(result['market:kraken:etcusd']) +
+              ' LTC' + Math.floor(result['market:kraken:ltcusd']) +
+              ' ZEC' + Math.floor(result['market:kraken:zecusd']);
+          background.printPattern(0, w, h - 7);
+          print(0, h - 7, marketString);
+        } catch (e) {
+        }
+      });
+    },
+    init: function () {
+      print(0, h - 8, '// Markets');
+      markets.update();
+      setInterval(markets.update, 60000);
+    }
+  };
+
+  var transmissions = {
+    top: favorites.top- 3-1,
+    heigth : 4, 
+    bottom : favorites.top,
+    list: [],
+    update: function () {
+      if ( apps.appdisplaymode=='home'){// Only display on home
+        print(0, transmissions.top, '// Transmissions');
+        get('https://hacker-news.firebaseio.com/v0/topstories.json', function (response) {
+        try {
+          var result = JSON.parse(response);
+          let t = transmissions;
+          let line = t.top+1;
+          t.list = [];
+          for (var i = 0; i < result.length && i < t.heigth-1; i++) {
+            get('https://hacker-news.firebaseio.com/v0/item/' + result[i] + '.json', function (itemResponse) {
+              var itemResult = JSON.parse(itemResponse);
+              var transmission = {
+                title: itemResult.title,
+                url: itemResult.url,
+                y: line
+              };
+              t.list.push(transmission);
+              background.printPattern(0, w, line);
+              t.printTransmission(transmission, false);
+              line++;
+            });
+          }
+        } catch (e) {
+        }
+      });// end of get callback
+     }
+    },
+    printTransmission: function (transmission, highlight) {
+      print(0, transmission.y, transmission.title,
+        highlight ? '#ff3333' : '#ffffff');
+      if (highlight) {
+        setTimeout(function () {
+          transmissions.printTransmission(transmission, false);
+        }, 1000);
+      }
+    },
+    init: function () {
+      transmissions.update();
+      setInterval(transmissions.update, 3600000);
+    },
+    onTouch: function (x, y) {
+        if ( apps.appdisplaymode=='home'){// Only display on home
+      for (var i = 0; i < transmissions.list.length; i++) {
+        if (transmissions.list[i].y === y &&
+          x <= transmissions.list[i].title.length) {
+          transmissions.printTransmission(transmissions.list[i], true);
+          ap37.openLink(transmissions.list[i].url);
+          return;
+        }
+      }
+     }
+    }
+  };
+
+  var wordGlitch = {
+    tick: 0,
+    length: 0,
+    x: 0,
+    y: 0,
+    text: [],
+    active: false,
+    intervalId: null,
+    update: function () {
+      var g = wordGlitch;
+      if (g.tick === 0) { // generate new glitch
+        g.length = 5 + Math.floor(Math.random() * 6);
+        g.x = Math.floor(Math.random() * (w - g.length));
+        g.y = Math.floor(Math.random() * h);
+
+        g.text = [];
+        for (var i = 0; i < 5; i++) {
+          g.text.push(Math.random().toString(36).substr(2, g.length));
+        }
+
+        ap37.print(g.x, g.y, g.text[g.tick], '#666666');
+        g.tick++;
+      } else if (g.tick === 5) { // remove glitch
+        ap37.printMultipleColors(g.x, g.y,
+          background.buffer[g.y].substr(g.x, g.length),
+          background.bufferColors[g.y].slice(g.x, g.x + g.length)
+        );
+        g.tick = 0;
+        if (!wordGlitch.active) {
+          clearInterval(wordGlitch.intervalId);
+        }
+      } else {
+        ap37.print(g.x, g.y, g.text[g.tick], '#666666');
+        g.tick++;
+      }
+    },
+    onTouch: function (x, y) {
+      if (x > w - 6 && y > h - 4) {
+        wordGlitch.active = !wordGlitch.active;
+        if (wordGlitch.active) {
+          wordGlitch.intervalId = setInterval(wordGlitch.update, 100);
+        }
+      }
+    }
+  };
+
+  var lineGlitch = {
+    tick: 0,
+    line: 0,
+    active: false,
+    intervalId: null,
+    update: function () {
+      var g = lineGlitch;
+      if (g.tick === 0) { // shift line
+        g.line = 1 + Math.floor(Math.random() * h - 1);
+
+        var offset = 1 + Math.floor(Math.random() * 4),
+          direction = Math.random() >= 0.5;
+
+        if (direction) {
+          ap37.printMultipleColors(0, g.line,
+            rightPad(
+              background.buffer[g.line].substring(offset), w,
+              ' '),
+            background.bufferColors[g.line].slice(offset));
+        } else {
+          ap37.printMultipleColors(0, g.line,
+            leftPad(background.buffer[g.line]
+              .substring(0, w - offset), w, ' '),
+            arrayFill('#ffffff', offset)
+              .concat(background.bufferColors[g.line]
+                .slice(0, w - offset))
+          );
+        }
+        g.tick++;
+      } else { // restore line
+        ap37.printMultipleColors(
+          0, g.line, background.buffer[g.line],
+          background.bufferColors[g.line]);
+        g.tick = 0;
+        if (!lineGlitch.active) {
+          clearInterval(lineGlitch.intervalId);
+        }
+      }
+    },
+    onTouch: function (x, y) {
+      if (x > w - 6 && y > h - 4) {
+        lineGlitch.active = !lineGlitch.active;
+        if (lineGlitch.active) {
+          lineGlitch.intervalId = setInterval(lineGlitch.update, 200);
+        }
+      }
+    }
+  };
+
+
+
+
 
   //utils
   const hexchars="0123456789abcdef";
