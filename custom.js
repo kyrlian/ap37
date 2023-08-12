@@ -22,7 +22,8 @@
 
   // modules layout 
   var layout={
-   resetlayout: function (){// TODO use below, directly, to handle resize beetween home and list modes by calling reset
+   mode : "home",
+   update: function (){// TODO use below, directly, to handle resize beetween home and list modes by calling reset
     layout.header = { top: 0, height: 2, bottom: 2, page: "all"};
     layout.notifications = {  top: layout.header.bottom, height: 6, bottom: -1, page: "all"};
     layout.footer = { top: -1, height: 2, bottom: h, page: "all"};
@@ -38,8 +39,11 @@
       else if ( layinfo.bottom == -1 ){ layinfo.bottom = layout.top + layout.height }
     }
    },
+   toggle: function(){
+     // TODO toggle mode
+   }
   };
-  layout.resetlayout();
+  layout.update();
 
   // easy debug
   function debugstuff(){//use this to display debug info in footer
