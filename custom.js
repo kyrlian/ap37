@@ -595,6 +595,11 @@
     }
   };
 
+  // TODO restore display glitches
+    
+  // TODO restore  markets
+   
+  // TODO restore  transmissions
 
   //utils
   const hexchars="0123456789abcdef";
