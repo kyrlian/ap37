@@ -33,6 +33,7 @@
     favorites.init();
     footer.init();
     ap37.setOnTouchListener(function (x, y) {
+      // TODO have a callback[] list, store positions and callbacks on print, use it on touch, saves handling on touch on each ?
       header.onTouch(x, y);
       apps.onTouch(x, y);
       notifications.onTouch(x, y);
@@ -236,31 +237,38 @@
     top:h-2,
     bottom:h,
     init: function () {
+      scrollers.create(0, w, footer.top, " ░▒▓▒░".repeat(10), config.textcolordim);
       print(3, footer.bottom-1, config.appversion);//bottom left
-      settings.init()
+      settings.init();
+      print(w-5, footer.bottom-1,  "EOF" );
     },
     onTouch: function (x, y) {
-      if(y >= footer.top && y < footer.bottom ){
+      if (y >= footer.top && y < footer.bottom ) {
         settings.onTouch(x,y);
         debugstuff();// run debug display on footer touch
       }
     }
-  };
+   };
 
-
-  var settings = {
+  var settings = {// TODO  rename to displaymode
+    x0: 0,
+    xf: 0,
     init: function () {
       settings.update();
     },
     update: function () {
-      print(w - 6, footer.bottom-1, apps.appdisplaymode.toUpperCase());
+      settings.x0 = Math.floor(( (w - apps.appdisplaymode.length) / 2) );
+      settings.xf = settings.x0 + apps.appdisplaymode.length ;
+      print( settings.x0 , footer.bottom-1, apps.appdisplaymode.toUpperCase());
     },
     onTouch: function (x, y) {
-      if (x >= w-6){//y tested by footer
+      if (x >= settings.x0 && x < settings.xf ){//y tested by footer
         apps.toggledisplaymode();
         settings.update();
       } else if ( x < config.appversion.length ){
         ap37.openLink("https://github.com/kyrlian/ap37");
+      } else if ( x > w-5 ){
+        // TODO  toggle glitches
       }
     }
   };
