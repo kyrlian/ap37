@@ -37,6 +37,7 @@
       header.onTouch(x, y);
       apps.onTouch(x, y);
       notifications.onTouch(x, y);
+      asciiclock.onTouch(x, y);
       favorites.onTouch(x, y);
       footer.onTouch(x,y);
       scrollers.onTouch(x,y);
@@ -85,25 +86,23 @@
   };
 
   var time = {
+    left: 3,
+    right: 3+13,
     update: function () {
       var d = ap37.getDate();
-      var time = d.year +
+      var timestr = d.year +
         leftPad(d.month, 2, '0') + leftPad(d.day, 2, '0') + ' ' +
         leftPad(d.hour, 2, '0') + leftPad(d.minute, 2, '0');
-      print(3, header.top, time);
+      print(time.left, header.top, timestr);
+      time.right = time.left + timestr.length;
     },
     init: function () {
       time.update();
       setInterval(time.update, 60000);
     },
     onTouch: function (x, y) {
-      if(x < 10){//y tested by header
-        for ( var j=0;j<apps.list.length;j++){
-          let app = apps.list[j]
-          if (app.name == "Clock"){
-            ap37.openApp(app.id);
-          }
-        }
+      if(x < time.right){//y tested by header
+        ap37.openApp( apps.getbyname("Clock").id);
       }
     }
   };
@@ -166,7 +165,9 @@
          "▄",
          "□"]],
      top : 10,
+     bottom : 10+5,
      left: 18,
+     right: 18 + 4*6 +1,
      init: function () {
       asciiclock.update();
       setInterval(asciiclock.update, 60000);
@@ -189,6 +190,11 @@
          asciiclock.printnum( asciiclock.left + 14,asciiclock.top, m1 );
          asciiclock.printnum( asciiclock.left + 20,asciiclock.top, m2 );
        }
+     },
+     onTouch: function (x, y) {
+      if(  apps.appdisplaymode=='home' &&  x >= asciiclock.left && x < asciiclock.right && y >= asciiclock.top && y < asciiclock.bottom ){//y tested by header
+        ap37.openApp( apps.getbyname("Clock").id);
+      }
      }
   };
 
@@ -446,6 +452,15 @@
     lineHeight: 2,
     currentPage: 0,
     isNextPageButtonVisible: false,
+    getbyname: function(n){
+     for ( var j=0;j<apps.list.length;j++){
+          let app = apps.list[j]
+          if (app.name == n){
+            return app;
+          }
+        }
+     },
+
     getdisplayname: function(app){
       let n = app.name;
       if(n in config.appDisplayName){ n = config.appDisplayName[n]; };
@@ -467,8 +482,7 @@
         let app = apps.list[appnum];
         if (apps.appdisplaymode!='home' || config.homeApps.includes(app.name) ){//if 'home' mode, only get homeApps
           let xshift = apps.getxshift(app);
-          let xf = x + xshift;
-          if (xf > w){//if out of row
+          if (x + xshift> w){//if out of row
             x=apps.margin;
             y+=apps.lineHeight;//keep a blank line between rows
             if(y >= apps.bottom ){//out of screen
@@ -483,11 +497,10 @@
           if(y < apps.bottom){
             app.x0 = x;
             app.y = y;
-            app.xf = x + xshift;
             app.page = page;
             app.displaymode = apps.appdisplaymode;// to test on touch
             apps.printApp(app, false);
-            x = app.xf;
+            x += xshift;
           }
         }
         appnum++;
@@ -505,6 +518,7 @@
         display =  display.substring(0, apps.homeAppWidth - 1)
       }
       print(app.x0, app.y, display, highlight ? config.textcolorclicked : config.textcolordim);
+      app.xf = app.x0 + display.length;
       apps.printNotifCount(app);
       if (highlight) {
         setTimeout(function () {
@@ -563,7 +577,7 @@
         for (var i = 0; i<apps.list.length; i++){
           var app = apps.list[i];
           if (app.page == apps.currentPage && app.displaymode == apps.appdisplaymode){
-            if (y >= app.y && y <= app.y + 1 && x >= app.x0 && x <= app.xf) {
+            if (y >= app.y && y < app.y + apps.lineHeight && x >= app.x0 && x <= app.xf) {
               apps.printApp(app, true);
               ap37.openApp(app.id);
               return;
