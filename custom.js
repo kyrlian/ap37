@@ -21,7 +21,7 @@
   var h = ap37.getScreenHeight();
 
   function debugstuff(){//use this to display debug info in footer
-    // debug("important■test■message");
+    // debug("important■test■message"+" - ");
   }
 
   function init() {
@@ -237,7 +237,7 @@
     top:h-2,
     bottom:h,
     init: function () {
-      scrollers.create(0, w, footer.top, "  ░░▒▒▓▓▒▒░░".repeat(w/8), config.textcolordim);
+     // scrollers.create(0, w, footer.top, "  ░░▒▒▓▓▒▒░░".repeat(w/8), config.textcolordim);
       print(3, footer.bottom-1, config.appversion);//bottom left
       settings.init();
       print(w-5, footer.bottom-1,  "EOF" );
@@ -250,7 +250,7 @@
     }
    };
 
-  var settings = {// TODO  rename to displaymode
+  var settings = {// TODO  split in 3: version, displaymode, glitches
     x0: 0,
     xf: 0,
     init: function () {
@@ -332,14 +332,14 @@
       var name = notification.name;
       var disp = (notification.appname ? notification.appname+":":" ") +name 
       if (notification.ellipsis) {
-        var length = Math.min(disp.length, w - 7);
+        var length = Math.min(disp.length, w - 7);// TODO  7 ?
         disp = disp.substring(0, length) + "... +" +
           (notifications.list.length -  notifications.height); //last notification with: name... number of remaining notifs
       }
       let ncolor = (highlight ? config.textcolorclicked : config.textcolorbright);
       if ( disp.length > w){// if notif doesnt fit, create a scroller
         if ( ! notification.scroller ){
-          notification.scroller = scrollers.create(0,w,notification.y,  disp, ncolor);
+          notification.scroller = scrollers.create(0,w,notification.y,  disp +" - ", ncolor);
         } else {
           // already exists, might be clicked and need color update
           notification.scroller.color = ncolor;
@@ -655,8 +655,7 @@
           scroller.start();
         }
       },
-      settext: function(str){
-        let s = str + " - ";
+      settext: function(s,sep){
         scroller.text = s.repeat( Math.ceil( scroller.width / s.length ));
         scroller.update();
       },
@@ -715,12 +714,12 @@
   let debugScroller = null;//dont init at load - only when needed
   function debug(obj){
     let str = ""+obj;
-    if ( typeof(obj) == "object" ){
+    if ( typeof(obj) == "object" ){// TODO  test on array of objects . alt: (""+obj).contains ("object")
       str = JSON.stringify(obj);
     }
     if (debugScroller === null){//init at first call
       debugScroller = scrollers.create(0, w, h-2, str, '#ff3333');
-    }else{
+    } else {
       debugScroller.settext( str );
     }
     // print(0, h-2, JSON.stringify(str), '#ff3333');
