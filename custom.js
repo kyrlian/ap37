@@ -21,23 +21,25 @@
   var h = ap37.getScreenHeight();
 
   // modules layout 
-  let layout={};
-  function resetlayout(){// TODO use below, see how to handle resize beetween home and list modes
-  layout.header = { top: 0, height: 2, bottom: 2, page: "all"};
-  layout.notifications = {  top: layout.header.bottom, height: 6, bottom: -1, page: "all"};
-  layout.footer = { top: -1, height: 2, bottom: h, page: "all"};
-  layout.favorites = { top: -1, height: 2, bottom: layout.footer.top, page: "all"};
-  layout.transmissions = { top: -1, height: 4, bottom: layout.favorites.top, page: "home"};
-  layout.market = { top: -1, height: 2, bottom: layout.transmissions.top, page: "home"};
-  layout.apps = { top: layout.notifications.bottom, height: -1, bottom: 2, page: "all"};
-  layout.asciiclock = { top: 0, height: 2, bottom: 2, left:-1, right: w, page: "home"};
-  for ( let lay in layout ){// handle variable sizes
-    let layinfo = layout[lay];
-    if ( layinfo.top == -1 ){ layinfo.top = layout.bottom - layout.height }
-    else if ( layinfo.height == -1 ){ layinfo.height = layout.bottom - layout.top }
-    else if ( layinfo.bottom == -1 ){ layinfo.bottom = layout.top + layout.height }
-  }}
-  resetlayout();
+  var layout={
+   resetlayout: function (){// TODO use below, directly, to handle resize beetween home and list modes by calling reset
+    layout.header = { top: 0, height: 2, bottom: 2, page: "all"};
+    layout.notifications = {  top: layout.header.bottom, height: 6, bottom: -1, page: "all"};
+    layout.footer = { top: -1, height: 2, bottom: h, page: "all"};
+    layout.favorites = { top: -1, height: 2, bottom: layout.footer.top, page: "all"};
+    layout.transmissions = { top: -1, height: 4, bottom: layout.favorites.top, page: "home"};
+    layout.market = { top: -1, height: 2, bottom: layout.transmissions.top, page: "home"};
+    layout.apps = { top: layout.notifications.bottom, height: -1, bottom: 2, page: "all"};
+    layout.asciiclock = { top: 0, height: 2, bottom: 2, left:-1, right: w, page: "home"};
+    for ( let lay in layout ){// handle calculated sizes
+      let layinfo = layout[lay];
+      if ( layinfo.top == -1 ){ layinfo.top = layout.bottom - layout.height }
+      else if ( layinfo.height == -1 ){ layinfo.height = layout.bottom - layout.top }
+      else if ( layinfo.bottom == -1 ){ layinfo.bottom = layout.top + layout.height }
+    }
+   },
+  };
+  layout.resetlayout();
 
   // easy debug
   function debugstuff(){//use this to display debug info in footer
