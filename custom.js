@@ -237,7 +237,7 @@
     top:h-2,
     bottom:h,
     init: function () {
-      scrollers.create(0, w, footer.top, " ░▒▓▒░".repeat(10), config.textcolordim);
+      scrollers.create(0, w, footer.top, "  ░░▒▒▓▓▒▒░░".repeat(w/8), config.textcolordim);
       print(3, footer.bottom-1, config.appversion);//bottom left
       settings.init();
       print(w-5, footer.bottom-1,  "EOF" );
