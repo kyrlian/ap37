@@ -209,6 +209,7 @@
      },
      update: function () {
        if ( apps.appdisplaymode=='home'){// Only display on home
+         // TODO first erase previous to avoid glitches
          var d = ap37.getDate();
          let h1 = asciiclock.nums[ Math.floor ( d.hour / 10 ) ];
          let h2 = asciiclock.nums[ d.hour % 10 ];
@@ -327,6 +328,7 @@
       notifications.active = ap37.notificationsActive();
       if (notifications.active) {
         var nots = ap37.getNotifications();
+         // TODO clean scrollers on oldnotifs first
         notifications.list = nots; 
         // count notification per app
         let notificationcounter={}
