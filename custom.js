@@ -28,8 +28,10 @@
     layout.notifications = {  top: layout.header.bottom, height: 6, bottom: -1, page: "all"};
     layout.footer = { top: -1, height: 2, bottom: h, page: "all"};
     layout.favorites = { top: -1, height: 2, bottom: layout.footer.top, page: "all"};
+    // TODO set h to 0 in layout home
     layout.transmissions = { top: -1, height: 4, bottom: layout.favorites.top, page: "home"};
     layout.market = { top: -1, height: 2, bottom: layout.transmissions.top, page: "home"};
+    // TODO depends on layout.mode
     layout.apps = { top: layout.notifications.bottom, height: -1, bottom: 2, page: "all"};
     layout.asciiclock = { top: 0, height: 2, bottom: 2, left:-1, right: w, page: "home"};
     for ( let lay in layout ){// handle calculated sizes
@@ -108,6 +110,7 @@
       if(y>=header.top && y < header.bottom){
         time.onTouch(x,y);
         meteo.onTouch(x,y);
+        // TODO click on battery open settings
       }
     },
   };
@@ -383,6 +386,7 @@
       if (highlight) {// if highlight set a timeout to reset to normal
         setTimeout(function () {
        // notifications.printNotification(notification, false);//hide it - its been clicked, will be removed soon
+      // TODO stop scroller 
           background.printPattern(0, w, notification.y);
         }, 1000);
       }
