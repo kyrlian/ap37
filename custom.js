@@ -23,17 +23,24 @@
   // modules layout 
   var layout={
    mode : "home",
+   init: function(){
+    layout.update();
+   },
    update: function (){// TODO use below, directly, to handle resize beetween home and list modes by calling reset
     layout.header = { top: 0, height: 2, bottom: 2, page: "all"};
-    layout.notifications = {  top: layout.header.bottom, height: 6, bottom: -1, page: "all"};
+     layout.time = {left: 3, right: 3+13};
+     layout.meteo = {left: w - 10, right: w-10+4};
+     layout.battery = {left: w - 6, right: w};
+    layout.notifications = {  top: layout.header.bottom, height: 6, bottom: -1, page: "all"};//-1 will be calculated
     layout.footer = { top: -1, height: 2, bottom: h, page: "all"};
     layout.favorites = { top: -1, height: 2, bottom: layout.footer.top, page: "all"};
-    // TODO set h to 0 in layout home
-    layout.transmissions = { top: -1, height: 4, bottom: layout.favorites.top, page: "home"};
-    layout.market = { top: -1, height: 2, bottom: layout.transmissions.top, page: "home"};
-    // TODO depends on layout.mode
-    layout.apps = { top: layout.notifications.bottom, height: -1, bottom: 2, page: "all"};
-    layout.asciiclock = { top: 0, height: 2, bottom: 2, left:-1, right: w, page: "home"};
+    // transmission and market height is 0 if not in layout home
+    layout.transmissions = { top: -1, height: (layout.mode == 'home' ? 4 : 0), bottom: layout.favorites.top, page: "home"};
+    layout.market = { top: -1, height: (layout.mode == 'home' ? 2 : 0), bottom: layout.transmissions.top, page: "home"};
+    //
+    layout.apps = { top: layout.notifications.bottom, height: -1, bottom: layout.markets.top, page: "all"};
+    layout.asciiclock = { top: layout.notifications.bottom+2, height: 5, bottom: -1, left:18, right: w, page: "home"};
+    //
     for ( let lay in layout ){// handle calculated sizes
       let layinfo = layout[lay];
       if ( layinfo.top == -1 ){ layinfo.top = layout.bottom - layout.height }
@@ -41,11 +48,12 @@
       else if ( layinfo.bottom == -1 ){ layinfo.bottom = layout.top + layout.height }
     }
    },
-   toggle: function(){
-     // TODO toggle mode
+   toggle: function(){// toggledisplaymode
+      layout.mode = (layout.mode == 'home') ? 'list' : 'home';//home or list
+      apps.currentPage = 0;
+      apps.update();
    }
   };
-  layout.update();
 
   // easy debug
   function debugstuff(){//use this to display debug info in footer
@@ -54,6 +62,7 @@
 
   // init all modules - will be run after all modules are declared
   function init() {
+    layout.update();
     background.init();
     header.init();
     apps.init();// do apps before notifications to init apps list
@@ -63,7 +72,6 @@
     favorites.init();
     footer.init();
     ap37.setOnTouchListener(function (x, y) {
-      // TODO have a callback[] list, store positions and callbacks on print, use it on touch, saves handling on touch on each ?
       header.onTouch(x, y);
       apps.onTouch(x, y);
       notifications.onTouch(x, y);
@@ -98,32 +106,27 @@
   };
   
   var header = {
-    heigth:layout["header"].height,
-    top:0,
-    bottom:2,
     init: function () {
       time.init();
       meteo.init()
       battery.init();
     },
     onTouch: function (x, y) {
-      if(y>=header.top && y < header.bottom){
+      if(y >= layout.header.top && y < layout.header.bottom){
         time.onTouch(x,y);
         meteo.onTouch(x,y);
-        // TODO click on battery open settings
+        battery.onTouch(x,y);
       }
     },
   };
 
   var time = {
-    left: 3,
-    right: 3+13,
     update: function () {
       var d = ap37.getDate();
       var timestr = d.year +
         leftPad(d.month, 2, '0') + leftPad(d.day, 2, '0') + ' ' +
         leftPad(d.hour, 2, '0') + leftPad(d.minute, 2, '0');
-      print(time.left, header.top, timestr);
+      print(layout.time.left, layout.header.top, timestr);
       time.right = time.left + timestr.length;
     },
     init: function () {
@@ -194,10 +197,6 @@
          "□",
          "▄",
          "□"]],
-     top : 10,
-     bottom : 10+5,
-     left: 18,
-     right: 18 + 4*6 +1,
      init: function () {
       asciiclock.update();
       setInterval(asciiclock.update, 60000);
@@ -208,7 +207,7 @@
       }
      },
      update: function () {
-       if ( apps.appdisplaymode=='home'){// Only display on home
+       if ( layout.mode=='home'){// Only display on home
          // TODO first erase previous to avoid glitches
          var d = ap37.getDate();
          let h1 = asciiclock.nums[ Math.floor ( d.hour / 10 ) ];
@@ -223,7 +222,7 @@
        }
      },
      onTouch: function (x, y) {
-      if(  apps.appdisplaymode=='home' &&  x >= asciiclock.left && x < asciiclock.right && y >= asciiclock.top && y < asciiclock.bottom ){//y tested by header
+      if(  layout.mode=='home' &&  x >= layout.asciiclock.left && x < layout.asciiclock.right && y >= layout.asciiclock.top && y < layout.asciiclock.bottom ){//y tested by header
         ap37.openApp( apps.getbyname("Clock").id);
       }
      }
@@ -247,11 +246,11 @@
     update: function () {
        get(meteo.meteourl, function (response) {
         let temperature = JSON.parse(response).current_weather.temperature;
-        print(w - 10, header.top, temperature.toFixed(0)+"'C");
+        print(layout.meteo.left, layout.header.top, temperature.toFixed(0)+"'C");
        });
     },
     onTouch: function (x, y) {
-      if(x > w - 10){//y tested by header
+      if(x >= layout.meteo.left && x < layout.meteo.right){//y tested by header
         ap37.openLink("https://duckduckgo.com/?q=meteo+"+encodeURIComponent(config.city));
       }
     }
@@ -259,7 +258,7 @@
 
   var battery = {
     update: function () {
-      print(w - 6, header.top,
+      print(layout.battery.left, layout.header.top,
         leftPad(ap37.getBatteryLevel(), 3, ' ')+'%');
     },
     init: function () {
@@ -270,116 +269,111 @@
 
 
   var footer = {
-    heigth:2,
-    top:h-2,
-    bottom:h,
+    x0: 0,
+    xf: 0,
     init: function () {
      // scrollers.create(0, w, footer.top, "  ░░▒▒▓▓▒▒░░".repeat(w/8), config.textcolordim);
-      print(3, footer.bottom-1, config.appversion);//bottom left
-      settings.init();
-      print(w-5, footer.bottom-1,  "EOF" );
+      print(3, layout.footer.bottom-1, config.appversion);//bottom left
+      footer.x0 = Math.floor(( (w - layout.mode.length) / 2) );
+      footer.xf = footer.x0 + layout.mode.length ;
+      print(w-5, layout.footer.bottom - 1,  "EOF" );//bottom right
+      footer.update();
+    },
+    update: function () {
+      print( footer.x0 , layout.footer.bottom-1, layout.mode.toUpperCase());
     },
     onTouch: function (x, y) {
-      if (y >= footer.top && y < footer.bottom ) {
-        settings.onTouch(x,y);
-        debugstuff();// run debug display on footer touch
+      if (y >= layout.footer.top && y < layout.footer.bottom ) {
+        if (x >= footer.x0 && x < footer.xf ){//y tested by footer
+          layout.toggle();
+          footer.update();
+        } else if ( x < config.appversion.length ){
+          ap37.openLink("https://github.com/kyrlian/ap37");
+        } else if ( x > w-5 ){
+          // TODO  toggle glitches
+        }else{
+          debugstuff();// run debug display on footer touch
+        }
       }
     }
    };
 
-  var settings = {// TODO  split in 3: version, displaymode, glitches
-    x0: 0,
-    xf: 0,
-    init: function () {
-      settings.update();
-    },
-    update: function () {
-      settings.x0 = Math.floor(( (w - apps.appdisplaymode.length) / 2) );
-      settings.xf = settings.x0 + apps.appdisplaymode.length ;
-      print( settings.x0 , footer.bottom-1, apps.appdisplaymode.toUpperCase());
-    },
-    onTouch: function (x, y) {
-      if (x >= settings.x0 && x < settings.xf ){//y tested by footer
-        apps.toggledisplaymode();
-        settings.update();
-      } else if ( x < config.appversion.length ){
-        ap37.openLink("https://github.com/kyrlian/ap37");
-      } else if ( x > w-5 ){
-        // TODO  toggle glitches
-      }
-    }
-  };
-
 
   var notifications = {
-    heigth:6,
-    top: header.bottom,
-    bottom: header.bottom+6,
     list: [],
     active: false,
+    init: function () {
+      ap37.setOnNotificationsListener(notifications.update);
+      notifications.update();
+    },
     guessapp: function (notification) { 
       for (var k in config.notifguesslist){
         if (notification.name.search(k)>=0){
-          notification.appname = config.notifguesslist[k]
+          notification.appname = config.notifguesslist[k];
+          return notification.appname;
         }
       }
     },
     update: function () {
       notifications.active = ap37.notificationsActive();
       if (notifications.active) {
+        // Clean scrollers on old notifs first
+        for (let k in notifications.list){
+          if (notifications.list[k].scroller ){
+            notifications.list[k].scroller.clear();
+          }
+        }
         var nots = ap37.getNotifications();
-         // TODO clean scrollers on oldnotifs first
         notifications.list = nots; 
         // count notification per app
-        let notificationcounter={}
-        for (var i=0;i<nots.length;i++){
-          var notification = nots[i]
-          notifications.guessapp(notification)
+        let notificationcounter={};
+        for (let i in nots){
+          var notification = nots[i];
+          notifications.guessapp(notification);
           if (notification.appname){
             if (notification.appname in notificationcounter){
-              notificationcounter[notification.appname] = notificationcounter[notification.appname] +1
+              notificationcounter[notification.appname] = notificationcounter[notification.appname] +1;
             }else{
-              notificationcounter[notification.appname] = 1
+              notificationcounter[notification.appname] = 1;
             }
           }
         }
         // update notif counter on apps with notifications
-        for ( var j=0;j<apps.list.length;j++){
+        for ( var j in apps.list ){
           var app = apps.list[j]
-          if (app.name in notificationcounter && app.page == apps.currentPage && app.displaymode == apps.appdisplaymode){
-              app.notifcount = notificationcounter[app.name]
-              apps.printNotifCount(app)
+          if (app.name in notificationcounter && app.page == apps.currentPage && app.displaymode == layout.mode){
+              app.notifcount = notificationcounter[app.name];
+              apps.printNotifCount(app);
           }
         }
-        for (var i = 0; i < notifications.heigth; i++) {// display max n notifications
-          var y = i + notifications.top;// print notifications from line 2
+        for (var i = 0; i < layout.notifications.height; i++) {// display max n notifications
+          var y = i + layout.notifications.top;// print notifications from line 2
           background.printPattern(0, w, y);//erase line first
           if (i < nots.length) {
             nots[i].y = y;
-            if (i ==  notifications.height -1 && nots.length > notifications.height) {
+            if (i == layout.notifications.height -1 && nots.length > layout.notifications.height) {
               nots[i].ellipsis = true;// if last displayable notif and has more
             }
             notifications.printNotification(nots[i], false);
           }
         }
       } else {
-        print(0, notifications.top, 'Activate notifications');
+        print(0, layout.notifications.top, 'Activate notifications');
       }
     },
     printNotification: function (notification, highlight) {
       var name = notification.name;
       var disp = (notification.appname ? notification.appname+":":" ") +name 
       if (notification.ellipsis) {
-        var length = Math.min(disp.length, w - 7);// TODO  7 ?
+        var length = Math.min(disp.length, w - "... +".length - 2);
         disp = disp.substring(0, length) + "... +" +
-          (notifications.list.length -  notifications.height); //last notification with: name... number of remaining notifs
+          (notifications.list.length -  layout.notifications.height); //last notification with: name... number of remaining notifs
       }
       let ncolor = (highlight ? config.textcolorclicked : config.textcolorbright);
       if ( disp.length > w){// if notif doesnt fit, create a scroller
         if ( ! notification.scroller ){
-          notification.scroller = scrollers.create(0,w,notification.y,  disp +" - ", ncolor);
-        } else {
-          // already exists, might be clicked and need color update
+          notification.scroller = scrollers.create(0, w, notification.y, disp +" - ", ncolor);
+        } else {// scroller already exists, might be clicked and need color update
           notification.scroller.color = ncolor;
         }
       } else {
@@ -387,37 +381,33 @@
       }
       if (highlight) {// if highlight set a timeout to reset to normal
         setTimeout(function () {
-       // notifications.printNotification(notification, false);//hide it - its been clicked, will be removed soon
-      // TODO stop scroller 
-          background.printPattern(0, w, notification.y);
+          if ( notification.scroller ){
+            notification.scroller.clear();
+          } else {
+            background.printPattern(0, w, notification.y);
+          }
         }, 1000);
       }
     },
-    init: function () {
-      ap37.setOnNotificationsListener(notifications.update);
-      notifications.update();
-    },
     onTouch: function (x, y) {
       if (notifications.active) {
-        if(y >= notifications.top && y < notifications.bottom ){
-          for (var i = 0; i < notifications.list.length; i++) {
-            if (notifications.list[i].y === y) {
-              notifications.printNotification(notifications.list[i], true);// highlight touched
-              ap37.openNotification(notifications.list[i].id);// and open
+        if(y >= layout.notifications.top && y < layout.notifications.bottom ){
+          for (var i in notifications.list ) {
+            let n = notifications.list[i]
+            if (n.y === y) {
+              notifications.printNotification(n, true);// highlight touched
+              ap37.openNotification(n.id);// and open
               return;
             }
           }
         }
-      } else if (y === notifications.top ) {// permission request alert on line  3
+      } else if (y === layout.notifications.top ) {// permission request alert on line  3
         ap37.requestNotificationsPermission();
       }
     }
   };
 
   var favorites = {
-    bottom: footer.top,
-    heigth:2,
-    top: footer.top-2,
     list:[],
     prefix :"[",
     postfix:"]",
@@ -427,22 +417,22 @@
       favorites.list = Array(config.favoriteApps.length)//init so we can put at the correct place
       let appslist = ap37.getApps();
       let totalDisplayLen = 0
-      for (let i = 0; i < appslist.length; i++){
-       let app = appslist[i];
-       if (config.favoriteApps.includes(app.name)){//init list
-        apps.getdisplayname(app)
-        app.favoriteDisplay = favorites.prefix + app.displayname + favorites.postfix;
-        favorites.list[config.favoriteApps.indexOf(app.name)] = app;
-        totalDisplayLen += app.favoriteDisplay.length;
-       }
+      for (let k in appslist){
+        let app = appslist[k];
+        if (config.favoriteApps.includes(app.name)){//init list
+          apps.getdisplayname(app);
+          app.favoriteDisplay = favorites.prefix + app.displayname + favorites.postfix;
+          favorites.list[config.favoriteApps.indexOf(app.name)] = app;
+          totalDisplayLen += app.favoriteDisplay.length;
+        }
       }
       favorites.spacing = Math.floor( (w - totalDisplayLen ) / (favorites.list.length - 1));
       favorites.margin = Math.floor((w - totalDisplayLen - (favorites.list.length - 1) * favorites.spacing ) / 2);
       let x = favorites.margin;
-      for (let i = 0; i< favorites.list.length; i++){//compute positions and draw
-        let app = favorites.list[i];
+      for (let k in favorites.list){//compute positions and draw
+        let app = favorites.list[k];
         app.x0 = x;
-        app.y = favorites.top;
+        app.y = layout.favorites.top;
         app.xf = x + app.favoriteDisplay.length;
         x = app.xf + favorites.spacing;
         favorites.printApp(app, false);
@@ -458,8 +448,8 @@
     },
     onTouch: function (x, y) {
       if(y >= favorites.top && y < favorites.bottom){
-        for (let i = 0; i< favorites.list.length; i++){
-          let app = favorites.list[i];
+        for (let k in favorites.list){
+          let app = favorites.list[k];
           if (x >= app.x0 && x <= app.xf) {
             favorites.printApp(app, true);//highligth
             ap37.openApp(app.id);
@@ -471,12 +461,8 @@
   };
 
   var apps = {
-    heigth: favorites.top - 1 - notifications.bottom,
-    top: notifications.bottom,
-    bottom: favorites.top - 1, //keep 1 because we use bottom line for pagination
     appprefix:'>',
     appprefixonnotif:'>',//will also be highlighted
-    appdisplaymode:'home',//home or list 
     list: [],
     pagefirstappnum: {0 : 0},
     margin:1,
@@ -485,10 +471,10 @@
     lineHeight: 2,
     currentPage: 0,
     isNextPageButtonVisible: false,
-    getbyname: function(n){
-      for ( var j=0;j<apps.list.length;j++){
-          let app = apps.list[j]
-          if (app.name == n){
+    getbyname: function(name){
+      for ( let k in apps.list){
+          let app = apps.list[k]
+          if (app.name == name){
             return app;
           }
       }
@@ -499,7 +485,7 @@
       app.displayname = n[0].toUpperCase() + n.slice(1).replaceAll(" ","");
     },
     getxshift: function(app){
-      if (apps.appdisplaymode=='home'){
+      if (layout.mode == 'home'){
         return apps.homeAppWidth;
       } else {
         return (apps.appprefix + app.displayname).length + 1;
@@ -510,43 +496,43 @@
       let x = apps.margin;
       let y = apps.top;
       background.printPattern(0, w, y);
-      while(y < apps.bottom && appnum < apps.list.length){
+      while(y < layout.apps.bottom && appnum < apps.list.length){
         let app = apps.list[appnum];
-        if (apps.appdisplaymode!='home' || config.homeApps.includes(app.name) ){//if 'home' mode, only get homeApps
+        if (layout.mode!='home' || config.homeApps.includes(app.name) ){//if 'home' mode, only get homeApps
           let xshift = apps.getxshift(app);
-          if (x + xshift> w){//if out of row
-            x=apps.margin;
-            y+=apps.lineHeight;//keep a blank line between rows
-            if(y >= apps.bottom ){//out of screen
-              apps.pagefirstappnum[page+1]=appnum;
+          if (x + xshift > w){//if out of row
+            x = apps.margin;
+            y += apps.lineHeight;//keep a blank line between rows
+            if(y >= layout.apps.bottom ){//out of screen
+              apps.pagefirstappnum[page+1] = appnum;
               apps.printPagination(true);// and activate pagination
             } else {
-              for( let i=0; i< apps.lineHeight ; i++){
+              for( let i=0; i < apps.lineHeight; i++){
                 background.printPattern(0, w, y-i);// clean new line
               }
             }
           }
-          if(y < apps.bottom){
+          if(y < layout.apps.bottom){
             app.x0 = x;
             app.y = y;
             app.page = page;
-            app.displaymode = apps.appdisplaymode;// to test on touch
+            app.displaymode = layout.mode;// to test on touch
             apps.printApp(app, false);
             x += xshift;
           }
         }
         appnum++;
       }
-      if(page==0 && y < apps.bottom ){
+      if(page==0 && y < layout.apps.bottom ){
         apps.printPagination(false);// deactivate printPagination
       }
-      for(let j=y+1;j < apps.bottom ;j++){
+      for(let j=y+1;j < layout.apps.bottom ;j++){
         background.printPattern(0, w, j);//erase rest of the zone
       }
     },
     printApp: function (app, highlight) {
       let display = apps.appprefix + app.displayname
-      if(apps.appdisplaymode == 'home'){//home mode
+      if(layout.mode == 'home'){//home mode
         display =  display.substring(0, apps.homeAppWidth - 1)
       }
       print(app.x0, app.y, display, highlight ? config.textcolorclicked : config.textcolordim);
@@ -565,23 +551,23 @@
          print(app.x0, app.y, apps.appprefixonnotif + app.displayname, config.textcolorbright);//highlight prefix
       }
     },
-    printPagination: function (onoff) {
+    printPagination: function(onoff) {
       if(onoff == ""){//if call with neither true or false, just print
         onoff = apps.isNextPageButtonVisible;// TODO used ?
       }
       if(onoff){
         apps.isNextPageButtonVisible = true;// activate pagination
-        print(w - 4, apps.bottom, '>>>');
+        print(w - 4, layout.apps.bottom, '>>>');
       } else {
         apps.isNextPageButtonVisible = false;
-        background.printPattern(w - 4, w, apps.bottom);// erase pagination >>>
+        background.printPattern(w - 4, w, layout.apps.bottom);// erase pagination >>>
       }
     },
     init: function () {
       apps.list=[];
       let appslist = ap37.getApps();
-      for (var i = 0; i<appslist.length; i++){
-       var app=appslist[i];
+      for (let k in appslist){
+       let app = appslist[k];
        if (!config.hideApps.includes(app.name)){
         app.notifcount=0;
         apps.getdisplayname(app)
@@ -593,22 +579,17 @@
       apps.update();
       ap37.setOnAppsListener(apps.init);// reset app list callback
     },
-    toggledisplaymode: function(){
-        apps.appdisplaymode = (apps.appdisplaymode == 'home') ? 'list' : 'home';//home or list
-        apps.currentPage = 0;
-        apps.update();
-    },
     update: function() {
       apps.printPage(apps.currentPage);
-      if ( apps.appdisplaymode == 'home' ){
+      if ( layout.mode == 'home' ){
         asciiclock.update();
       }
     },
     onTouch: function (x, y) {
-      if(y >= apps.top && y < apps.bottom){
-        for (var i = 0; i<apps.list.length; i++){
-          var app = apps.list[i];
-          if (app.page == apps.currentPage && app.displaymode == apps.appdisplaymode){
+      if(y >= layout.apps.top && y < layout.apps.bottom){
+        for (let k in apps.list){
+          let app = apps.list[k];
+          if (app.page == apps.currentPage && app.displaymode == layout.mode){
             if (y >= app.y && y < app.y + apps.lineHeight && x >= app.x0 && x <= app.xf) {
               apps.printApp(app, true);
               ap37.openApp(app.id);
@@ -617,7 +598,7 @@
           }
         }
       }
-      if (apps.isNextPageButtonVisible && y == apps.bottom && x >= w - 4 ) {
+      if (apps.isNextPageButtonVisible && y == layout.apps.bottom && x >= w - ">>>".length) {
         apps.currentPage++;
         if(!(apps.currentPage in apps.pagefirstappnum)){
             apps.currentPage = 0;
@@ -627,54 +608,44 @@
     }
   };
 
-  // TODO restore display glitches
-    
-  // TODO restore  markets
-   
-  // TODO restore  transmissions
-
-
-
    var markets = {
-    update: function () {
-      get('https://api.cryptowat.ch/markets/prices', function (response) {
-        try {
-          var result = JSON.parse(response).result,
-            marketString =
-              'BTC' + Math.floor(result['market:kraken:btcusd']) +
-              ' BCH' + Math.floor(result['market:kraken:bchusd']) +
-              ' ETH' + Math.floor(result['market:kraken:ethusd']) +
-              ' ETC' + Math.floor(result['market:kraken:etcusd']) +
-              ' LTC' + Math.floor(result['market:kraken:ltcusd']) +
-              ' ZEC' + Math.floor(result['market:kraken:zecusd']);
-          background.printPattern(0, w, h - 7);
-          print(0, h - 7, marketString);
-        } catch (e) {
-        }
-      });
-    },
     init: function () {
-      print(0, h - 8, '// Markets');
+      print(0, layout.markets.top, '// Markets');
       markets.update();
       setInterval(markets.update, 60000);
-    }
+    },
+    update: function () {
+      if ( layout.mode == 'home'){// Only display on home
+        get('https://api.cryptowat.ch/markets/prices', function (response) {
+          try {
+            var result = JSON.parse(response).result,
+              marketString =
+                'BTC' + Math.floor(result['market:kraken:btcusd']) +
+                ' BCH' + Math.floor(result['market:kraken:bchusd']) +
+                ' ETH' + Math.floor(result['market:kraken:ethusd']) +
+                ' ETC' + Math.floor(result['market:kraken:etcusd']) +
+                ' LTC' + Math.floor(result['market:kraken:ltcusd']) +
+                ' ZEC' + Math.floor(result['market:kraken:zecusd']);
+            background.printPattern(0, w, layout.markets.top+1);
+            print(0, layout.markets.top+1, marketString);
+          } catch (e) {
+          }
+        });
+      }
+    },
   };
 
   var transmissions = {
-    top: favorites.top- 3-1,
-    heigth : 4, 
-    bottom : favorites.top,
     list: [],
     update: function () {
-      if ( apps.appdisplaymode=='home'){// Only display on home
+      if ( layout.mode == 'home'){// Only display on home
         print(0, transmissions.top, '// Transmissions');
         get('https://hacker-news.firebaseio.com/v0/topstories.json', function (response) {
         try {
           var result = JSON.parse(response);
-          let t = transmissions;
-          let line = t.top+1;
-          t.list = [];
-          for (var i = 0; i < result.length && i < t.heigth-1; i++) {
+          let line = layout.transmissions.top + 1;
+          transmissions.list = [];
+          for (var i = 0; i < result.length && i < transmissions.height-1; i++) {
             get('https://hacker-news.firebaseio.com/v0/item/' + result[i] + '.json', function (itemResponse) {
               var itemResult = JSON.parse(itemResponse);
               var transmission = {
@@ -682,9 +653,9 @@
                 url: itemResult.url,
                 y: line
               };
-              t.list.push(transmission);
+              transmissions.list.push(transmission);
               background.printPattern(0, w, line);
-              t.printTransmission(transmission, false);
+              transmissions.printTransmission(transmission, false);
               line++;
             });
           }
@@ -707,19 +678,21 @@
       setInterval(transmissions.update, 3600000);
     },
     onTouch: function (x, y) {
-        if ( apps.appdisplaymode=='home'){// Only display on home
-      for (var i = 0; i < transmissions.list.length; i++) {
-        if (transmissions.list[i].y === y &&
-          x <= transmissions.list[i].title.length) {
-          transmissions.printTransmission(transmissions.list[i], true);
-          ap37.openLink(transmissions.list[i].url);
-          return;
+      if ( layout.mode == 'home'){// Only display on home
+        for (var k in transmissions.list) {
+          let transmission = transmissions.list[k];
+          if (transmission.y === y &&
+            x <= transmission.title.length) {
+            transmissions.printTransmission(transmission, true);
+            ap37.openLink(transmission.url);
+            return;
+          }
         }
       }
-     }
     }
   };
 
+  // TODO restore display glitches
   var wordGlitch = {
     tick: 0,
     length: 0,
@@ -882,8 +855,11 @@
       },
       stop: function(){
         clearInterval(scroller.interval);
-      //  print(scroller.x, scroller.y, scroller.str, scroller.color);
         scroller.running = false;
+      },
+      clear: function(){
+        scroller.stop();
+        background.printPattern(scroller.x, scroller.x + scroller.width, scroller.y);
       },
       toggle: function(){
         if ( scroller.running ) {
