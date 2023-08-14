@@ -48,8 +48,8 @@
     // transmission and market height is 0 if not in layout home
     layout.transmissions =  recalc({ top: -1, height: (layout.mode == 'home' ? 5 : 0), bottom: layout.favorites.top, page: "home"});
     layout.markets =  recalc({ top: -1, height: (layout.mode == 'home' ? 3 : 0), bottom: layout.transmissions.top, page: "home"});
-    // 
-    layout.apps =  recalc({ top: layout.notifications.bottom +1,  height: -1, bottom: layout.markets.top -1, page: "all"});
+    // TODO fix bottom and pagination 
+    layout.apps =  recalc({ top: layout.notifications.bottom +1,  height: -1, bottom: layout.markets.top, page: "all"});
     // adjust clock position in landscape orientation
     layout.asciiclock =  recalc({ top: ( layout.orientation == 'portrait' ? layout.notifications.bottom + 2 : layout.header.bottom + 1 ), height: 5, bottom: -1, left:w-26, right: w, page: "home"});
    },
@@ -61,6 +61,7 @@
       asciiclock.update();
       markets.update();
       transmissions.update();
+      footer.update();
    }
   };
 
@@ -323,7 +324,7 @@
       if (y >= layout.footer.top && y < layout.footer.bottom ) {
         if (x >= footer.x0 && x < footer.xf ){//center home/list button
           layout.toggle();
-          footer.update();
+          // footer.update();// done in toggle
         } else if ( x < config.appversion.length ){ // bottom left, app version
           ap37.openLink("https://github.com/kyrlian/ap37");
         } else if ( x > w-5 ){ // bottom right, "EOF" toggles glitches
@@ -489,7 +490,7 @@
       }
     },
     onTouch: function (x, y) {
-      if(y >= favorites.top && y < favorites.bottom){
+      if(y >= layout.favorites.top && y < layout.favorites.bottom){
         for (let k in favorites.list){
           let app = favorites.list[k];
           if (x >= app.x0 && x <= app.xf) {
@@ -545,7 +546,7 @@
           if (x + xshift > w){//if out of row
             x = apps.margin;
             y += apps.lineHeight;//keep a blank line between rows
-            if(y >= layout.apps.bottom ){//out of screen
+            if(y >= layout.apps.bottom -1){//out of screen, keep 1 for >>>
               apps.pagefirstappnum[page+1] = appnum;
             } else {
               for( let i=0; i < apps.lineHeight; i++){
