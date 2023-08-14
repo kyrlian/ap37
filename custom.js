@@ -26,48 +26,52 @@
    init: function(){
     layout.update();
    },
-   update: function (){// TODO use below, directly, to handle resize beetween home and list modes by calling reset
-    layout.header = { top: 0, height: 2, bottom: 2, page: "all"};
-     layout.time = {left: 3, right: 3+13};
-     layout.meteo = {left: w - 10, right: w-10+4};
-     layout.battery = {left: w - 6, right: w};
-    layout.notifications = {  top: layout.header.bottom, height: 6, bottom: -1, page: "all"};//-1 will be calculated
-    layout.footer = { top: -1, height: 2, bottom: h, page: "all"};
-    layout.favorites = { top: -1, height: 2, bottom: layout.footer.top, page: "all"};
-    // transmission and market height is 0 if not in layout home
-    layout.transmissions = { top: -1, height: (layout.mode == 'home' ? 4 : 0), bottom: layout.favorites.top, page: "home"};
-    layout.market = { top: -1, height: (layout.mode == 'home' ? 2 : 0), bottom: layout.transmissions.top, page: "home"};
-    //
-    layout.apps = { top: layout.notifications.bottom, height: -1, bottom: layout.markets.top, page: "all"};
-    layout.asciiclock = { top: layout.notifications.bottom+2, height: 5, bottom: -1, left:18, right: w, page: "home"};
-    //
-    for ( let lay in layout ){// handle calculated sizes
-      let layinfo = layout[lay];
-      if ( layinfo.top == -1 ){ layinfo.top = layout.bottom - layout.height }
-      else if ( layinfo.height == -1 ){ layinfo.height = layout.bottom - layout.top }
-      else if ( layinfo.bottom == -1 ){ layinfo.bottom = layout.top + layout.height }
+   update: function (){// used below, directly, to handle resize beetween home and list modes by calling reset
+    function recalc(layinfo){
+      if ( layinfo.top == -1 ){ layinfo.top = layinfo.bottom - layinfo.height }
+      else if ( layinfo.height == -1 ){ layinfo.height = layinfo.bottom - layinfo.top }
+      else if ( layinfo.bottom == -1 ){ layinfo.bottom = layinfo.top + layinfo.height }
+      return layinfo;
     }
+    layout.header = recalc({ top: 0, height: 2, bottom: -1, page: "all"});
+     layout.time = recalc( {left: 3, right: 3+13});
+     layout.meteo =  recalc({left: w - 10, right: w-10+4});
+     layout.battery =  recalc({left: w - 6, right: w});
+    layout.notifications =  recalc({  top: layout.header.bottom, height: 6, bottom: -1, page: "all"});//-1 will be calculated
+    layout.footer = recalc( { top: -1, height: 2, bottom: h, page: "all"});
+    layout.favorites =  recalc({ top: -1, height: 2, bottom: layout.footer.top, page: "all"});
+    // transmission and market height is 0 if not in layout home
+    layout.transmissions =  recalc({ top: -1, height: (layout.mode == 'home' ? 5 : 0), bottom: layout.favorites.top, page: "home"});
+    layout.markets =  recalc({ top: -1, height: (layout.mode == 'home' ? 3 : 0), bottom: layout.transmissions.top, page: "home"});
+    //
+    layout.apps =  recalc({ top: layout.notifications.bottom, height: -1, bottom: layout.markets.top, page: "all"});
+    layout.asciiclock =  recalc({ top: layout.notifications.bottom + 2, height: 5, bottom: -1, left:18, right: w, page: "home"});
    },
    toggle: function(){// toggledisplaymode
       layout.mode = (layout.mode == 'home') ? 'list' : 'home';//home or list
+      layout.update();
       apps.currentPage = 0;
       apps.update();
+      asciiclock.update();
+      markets.update();
+      transmissions.update();
    }
   };
 
   // easy debug
   function debugstuff(){//use this to display debug info in footer
-    // debug("important■test■message"+" - ");
+    debug(layout.asciiclock.top+" ");
   }
 
   // init all modules - will be run after all modules are declared
   function init() {
-    layout.update();
+    layout.init();
     background.init();
     header.init();
     apps.init();// do apps before notifications to init apps list
     notifications.init();
     asciiclock.init();// do clock after apps
+    markets.init();
     transmissions.init();
     favorites.init();
     footer.init();
@@ -134,7 +138,7 @@
       setInterval(time.update, 60000);
     },
     onTouch: function (x, y) {
-      if(x < time.right){//y tested by header
+      if(x >= layout.time.left && x < layout.time.right){//y tested by header
         ap37.openApp( apps.getbyname("Clock").id);
       }
     }
@@ -201,28 +205,31 @@
       asciiclock.update();
       setInterval(asciiclock.update, 60000);
      },
-     printnum: function (x,y,n) {
-      for( let i=0;i<n.length;i++){
-        print(x, y+i, n[i].replaceAll("□"," "));
+     printnum: function (x, y, n) {
+      for( let k = 0; k<n.length; k++){
+        print(x, y + k, n[k].replaceAll("□"," "));
       }
      },
      update: function () {
-       if ( layout.mode=='home'){// Only display on home
-         // TODO first erase previous to avoid glitches
+       if ( layout.mode == 'home'){// Only display on home
+         // first erase previous to avoid glitches
+         for ( let j=0; j< layout.asciiclock.height; j++){
+           background.printPattern( layout.asciiclock.left, w, layout.asciiclock.top + j);
+         }
          var d = ap37.getDate();
          let h1 = asciiclock.nums[ Math.floor ( d.hour / 10 ) ];
          let h2 = asciiclock.nums[ d.hour % 10 ];
          let m1 = asciiclock.nums[ Math.floor ( d.minute / 10 ) ];
          let m2 = asciiclock.nums[ d.minute % 10 ];
-         asciiclock.printnum( asciiclock.left,asciiclock.top, h1 );
-         asciiclock.printnum( asciiclock.left + 6,asciiclock.top, h2 );
-         asciiclock.printnum( asciiclock.left + 12,asciiclock.top, asciiclock.nums[10] );
-         asciiclock.printnum( asciiclock.left + 14,asciiclock.top, m1 );
-         asciiclock.printnum( asciiclock.left + 20,asciiclock.top, m2 );
+         asciiclock.printnum( layout.asciiclock.left, layout.asciiclock.top, h1 );
+         asciiclock.printnum( layout.asciiclock.left + 6, layout.asciiclock.top, h2 );
+         asciiclock.printnum( layout.asciiclock.left + 12, layout.asciiclock.top, asciiclock.nums[10] );
+         asciiclock.printnum( layout.asciiclock.left + 14, layout.asciiclock.top, m1 );
+         asciiclock.printnum( layout.asciiclock.left + 20, layout.asciiclock.top, m2 );
        }
      },
      onTouch: function (x, y) {
-      if(  layout.mode=='home' &&  x >= layout.asciiclock.left && x < layout.asciiclock.right && y >= layout.asciiclock.top && y < layout.asciiclock.bottom ){//y tested by header
+      if(  layout.mode == 'home' &&  x >= layout.asciiclock.left && x < layout.asciiclock.right && y >= layout.asciiclock.top && y < layout.asciiclock.bottom ){//y tested by header
         ap37.openApp( apps.getbyname("Clock").id);
       }
      }
@@ -264,7 +271,12 @@
     init: function () {
       battery.update();
       setInterval(battery.update, 60000);
-    }
+    },
+    onTouch : function (){
+     if(x >= layout.battery.left && x < layout.battery.right){
+      ap37.openApp( apps.getbyname("Settings").id);
+     }
+    },
   };
 
 
@@ -494,7 +506,7 @@
     printPage: function (page) {
       let appnum = apps.pagefirstappnum[page];
       let x = apps.margin;
-      let y = apps.top;
+      let y = layout.apps.top;
       background.printPattern(0, w, y);
       while(y < layout.apps.bottom && appnum < apps.list.length){
         let app = apps.list[appnum];
@@ -608,14 +620,15 @@
     }
   };
 
-   var markets = {
+  var markets = {
     init: function () {
-      print(0, layout.markets.top, '// Markets');
       markets.update();
       setInterval(markets.update, 60000);
     },
     update: function () {
       if ( layout.mode == 'home'){// Only display on home
+        background.printPattern( 0,w, layout.markets.top);
+        print(0, layout.markets.top, '// Markets', config.textcolordim);
         get('https://api.cryptowat.ch/markets/prices', function (response) {
           try {
             var result = JSON.parse(response).result,
@@ -627,7 +640,7 @@
                 ' LTC' + Math.floor(result['market:kraken:ltcusd']) +
                 ' ZEC' + Math.floor(result['market:kraken:zecusd']);
             background.printPattern(0, w, layout.markets.top+1);
-            print(0, layout.markets.top+1, marketString);
+            print(0, layout.markets.top+1, marketString, config.textcolordim);
           } catch (e) {
           }
         });
@@ -639,13 +652,14 @@
     list: [],
     update: function () {
       if ( layout.mode == 'home'){// Only display on home
-        print(0, transmissions.top, '// Transmissions');
+        background.printPattern( 0,w, layout.transmissions.top);
+        print(0, layout.transmissions.top, '// Transmissions', config.textcolordim);
         get('https://hacker-news.firebaseio.com/v0/topstories.json', function (response) {
         try {
           var result = JSON.parse(response);
           let line = layout.transmissions.top + 1;
           transmissions.list = [];
-          for (var i = 0; i < result.length && i < transmissions.height-1; i++) {
+          for (var i = 0; i < result.length && i < layout.transmissions.height-2; i++) {
             get('https://hacker-news.firebaseio.com/v0/item/' + result[i] + '.json', function (itemResponse) {
               var itemResult = JSON.parse(itemResponse);
               var transmission = {
@@ -666,7 +680,7 @@
     },
     printTransmission: function (transmission, highlight) {
       print(0, transmission.y, transmission.title,
-        highlight ? '#ff3333' : '#ffffff');
+        highlight ? config.textcolorclicked : config.textcolordim );// TODO replace colors with config colors 
       if (highlight) {
         setTimeout(function () {
           transmissions.printTransmission(transmission, false);
@@ -689,7 +703,7 @@
           }
         }
       }
-    }
+    },
   };
 
   // TODO restore display glitches
@@ -789,9 +803,6 @@
   };
 
 
-
-
-
   //utils
   const hexchars="0123456789abcdef";
   function randomizeHexColor(c) {
@@ -848,9 +859,10 @@
       step: 2,
       interval: null,
       running: true,
+      delay: 500,
       start: function(){
         scroller.settext(scroller.str);
-        scroller.interval = setInterval(scroller.update, 1000);
+        scroller.interval = setInterval(scroller.update, scroller.delay);
         scroller.running = true;
       },
       stop: function(){
@@ -927,7 +939,7 @@
   let debugScroller = null;//dont init at load - only when needed
   function debug(obj){
     let str = ""+obj;
-    if ( typeof(obj) == "object" ){// TODO  test on array of objects . alt: (""+obj).contains ("object")
+    if ( str.indexOf("object" )>=0){// TODO  test on array of objects . alt: (""+obj).contains ("object")
       str = JSON.stringify(obj);
     }
     if (debugScroller === null){//init at first call
