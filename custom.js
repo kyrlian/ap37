@@ -22,17 +22,21 @@
 
   // modules layout 
   var layout={
-   mode : "home",
+   orientation : 'portrait',
+   mode : 'home',
    init: function(){
     layout.update();
    },
    update: function (){// used below, directly, to handle resize beetween home and list modes by calling reset
+    w = ap37.getScreenWidth();
+    h = ap37.getScreenHeight();
     function recalc(layinfo){
       if ( layinfo.top == -1 ){ layinfo.top = layinfo.bottom - layinfo.height }
       else if ( layinfo.height == -1 ){ layinfo.height = layinfo.bottom - layinfo.top }
       else if ( layinfo.bottom == -1 ){ layinfo.bottom = layinfo.top + layinfo.height }
       return layinfo;
     }
+    layout.orientation = ( w > h ? 'landscape' : 'portrait' );
     layout.header = recalc({ top: 0, height: 2, bottom: -1, page: "all"});
      layout.time = recalc( {left: 3, right: 3+13});
      layout.meteo =  recalc({left: w - 10, right: w-10+4});
@@ -43,11 +47,12 @@
     // transmission and market height is 0 if not in layout home
     layout.transmissions =  recalc({ top: -1, height: (layout.mode == 'home' ? 5 : 0), bottom: layout.favorites.top, page: "home"});
     layout.markets =  recalc({ top: -1, height: (layout.mode == 'home' ? 3 : 0), bottom: layout.transmissions.top, page: "home"});
-    //
-    layout.apps =  recalc({ top: layout.notifications.bottom, height: -1, bottom: layout.markets.top, page: "all"});
-    layout.asciiclock =  recalc({ top: layout.notifications.bottom + 2, height: 5, bottom: -1, left:18, right: w, page: "home"});
+    // 
+    layout.apps =  recalc({ top: layout.notifications.bottom +1,  height: -1, bottom: layout.markets.top -1, page: "all"});
+    // adjust clock position in landscape orientation
+    layout.asciiclock =  recalc({ top: ( layout.orientation == 'portrait' ? layout.notifications.bottom + 2 : layout.header.bottom + 1 ), height: 5, bottom: -1, left:w-26, right: w, page: "home"});
    },
-   toggle: function(){// toggledisplaymode
+   toggle: function(){// toggle display mode
       layout.mode = (layout.mode == 'home') ? 'list' : 'home';//home or list
       layout.update();
       apps.currentPage = 0;
@@ -60,7 +65,7 @@
 
   // easy debug
   function debugstuff(){//use this to display debug info in footer
-    debug(layout.asciiclock.top+" ");
+    debug(layout.orientation+" ");
   }
 
   // init all modules - will be run after all modules are declared
@@ -572,10 +577,10 @@
       }
       if(onoff){
         apps.isNextPageButtonVisible = true;// activate pagination
-        print(w - 4, layout.apps.bottom, '>>>');
+        print(w - 4, layout.apps.bottom -1, '>>>');
       } else {
         apps.isNextPageButtonVisible = false;
-        background.printPattern(w - 4, w, layout.apps.bottom);// erase pagination >>>
+        background.printPattern(w - 4, w, layout.apps.bottom-1);// erase pagination >>>
       }
     },
     init: function () {
@@ -595,7 +600,9 @@
       ap37.setOnAppsListener(apps.init);// reset app list callback
     },
     update: function() {
-      apps.printPage(apps.currentPage);
+      if ( layout.mode == 'list' || layout.orientation == 'portrait'){
+        apps.printPage(apps.currentPage);
+      }// TODO move this to layout.update 
       if ( layout.mode == 'home' ){
         asciiclock.update();
       }
