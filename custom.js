@@ -326,13 +326,18 @@
         } else if ( x < config.appversion.length ){ // bottom left, app version
           ap37.openLink("https://github.com/kyrlian/ap37");
         } else if ( x > w-5 ){ // bottom right, "EOF" toggles glitches
-          wordGlitch.active = !wordGlitch.active;
+          //once to activate word only, twice to activate line only, trice for both, four for off
+          if(!wordGlitch.active && !lineGlitch.active){ wordGlitch.active = true; lineGlitch.active = false }
+          if( wordGlitch.active && !lineGlitch.active){ wordGlitch.active = false; lineGlitch.active = true }
+          if(!wordGlitch.active && lineGlitch.active){ wordGlitch.active = true; lineGlitch.active = true }
+          if( wordGlitch.active &&  lineGlitch.active){ wordGlitch.active = false; lineGlitch.active = false}
+          // wordGlitch.active = !wordGlitch.active;
+          // lineGlitch.active = !lineGlitch.active;
           if (wordGlitch.active) {
-            wordGlitch.intervalId = setInterval(wordGlitch.update, 100);
+            wordGlitch.intervalId = setInterval(wordGlitch.update, 200);
           }
-          lineGlitch.active = !lineGlitch.active;
           if (lineGlitch.active) {
-            lineGlitch.intervalId = setInterval(lineGlitch.update, 200);
+            lineGlitch.intervalId = setInterval(lineGlitch.update, 500);
           }
         }else{
           debugstuff();// run debug display on footer touch
@@ -750,12 +755,13 @@
         g.y = Math.floor(Math.random() * h);
         g.text = [];
         for (var i = 0; i < 5; i++) {
-          g.text.push(Math.random().toString(36).substr(2, g.length));
+          //g.text.push(Math.random().toString(36).substr(2, g.length)); //original word glitch
+          g.text.push(background.randomline(g.length))
         }
         ap37.print(g.x, g.y, g.text[g.tick], config.textcolorglitch);
         g.tick++;
       } else if (g.tick === 5) { // remove glitch
-        restorebuffer(g.x, g.x + g.length, g.y);
+        background.restorebuffer(g.x, g.x + g.length, g.y);
         g.tick = 0;
         if (!wordGlitch.active) {
           clearInterval(wordGlitch.intervalId);
@@ -775,8 +781,8 @@
     update: function () {
       var g = lineGlitch;
       if (g.tick === 0) { // shift line
-        g.line = 1 + Math.floor(Math.random() * h - 1);
-        var offset = 1 + Math.floor(Math.random() * 4);
+        g.line = Math.floor(Math.random() * h);
+        var offset = Math.ceil(Math.random() * 4);
         let direction = Math.random() >= 0.5;
         if (direction) {
           ap37.printMultipleColors(0, g.line,
@@ -790,7 +796,7 @@
         }
         g.tick++;
       } else { // restore line
-        restorebuffer(0, w, g.line);
+        background.restorebuffer(0, w, g.line);
         g.tick = 0;
         if (!lineGlitch.active) {
           clearInterval(lineGlitch.intervalId);
@@ -821,7 +827,7 @@
 
   function print(x, y, text, color) {
     let rcolor =  color || config.textcolorbright;
-    background.updatebuffer(x,y,text,rcolor);
+    background.updatebuffer(x, y, text, rcolor);
     ap37.print(x, y, text, rcolor);
   }
 
