@@ -328,18 +328,11 @@
           ap37.openLink("https://github.com/kyrlian/ap37");
         } else if ( x > w-5 ){ // bottom right, "EOF" toggles glitches
           //once to activate word only, twice to activate line only, trice for both, four for off
-          if(!wordGlitch.active && !lineGlitch.active){ wordGlitch.active = true; lineGlitch.active = false; footer.eof = 'eOF'}
-          else if( wordGlitch.active && !lineGlitch.active){ wordGlitch.active = false; lineGlitch.active = true ; footer.eof = 'EoF' }
-          else if(!wordGlitch.active && lineGlitch.active){ wordGlitch.active = true; lineGlitch.active = true ; footer.eof = 'eof' }
+          if(!wordGlitch.active && !lineGlitch.active){ wordGlitch.activate(); lineGlitch.active = false; footer.eof = 'eOF'}
+          else if( wordGlitch.active && !lineGlitch.active){ wordGlitch.active = false; lineGlitch.activate() ; footer.eof = 'EoF' }
+          else if(!wordGlitch.active && lineGlitch.active){ wordGlitch.activate(); lineGlitch.activate() ; footer.eof = 'eof' }
           else if( wordGlitch.active &&  lineGlitch.active){ wordGlitch.active = false; lineGlitch.active = false ; footer.eof = 'EOF'}
-          // wordGlitch.active = !wordGlitch.active;
-          // lineGlitch.active = !lineGlitch.active;
-          if (wordGlitch.active) {
-            wordGlitch.intervalId = setInterval(wordGlitch.update, 200);
-          }
-          if (lineGlitch.active) {
-            lineGlitch.intervalId = setInterval(lineGlitch.update, 500);
-          }
+          footer.update();
         }else{
           debugstuff();// run debug display on footer touch
         }
@@ -748,6 +741,12 @@
     text: [],
     active: false,
     intervalId: null,
+    activate: function() {
+      if (!wordGlitch.active) {
+        wordGlitch.intervalId = setInterval(wordGlitch.update, 200);
+        wordGlitch.active = true;
+      }
+    },
     update: function () {
       var g = wordGlitch;
       if (g.tick === 0) { // generate new glitch
@@ -779,6 +778,12 @@
     line: 0,
     active: false,
     intervalId: null,
+    activate: function() {
+      if (!lineGlitch.active) {// if not already active
+        lineGlitch.intervalId = setInterval(lineGlitch.update, 500);
+        lineGlitch.active = true;
+      }
+    },
     update: function () {
       var g = lineGlitch;
       if (g.tick === 0) { // shift line
