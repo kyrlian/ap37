@@ -108,7 +108,6 @@
       return line;
     },
     printPattern: function (x0, xf, y) {//redraw background for a single line
-      //print(x0, y, background.randomline(xf-x0), config.bgcolor);
       print(x0, y, background.pattern.substring(y * w + x0, y * w + xf), config.bgcolor);
     },
     updatebuffer: function(x,y,text,color){
@@ -127,7 +126,7 @@
       }
     },
     init: function () {
-      // background.pattern = rightPad(script, h * w, ' ');//original version
+      // background.pattern = rightPad(script, h * w, ' ');//original ap37 version
       background.pattern = background.randomline(h * w);
       for (var i = 0; i < h; i++) {
         background.buffer.push(background.pattern.substr(i * w, w));
@@ -153,6 +152,10 @@
   };
 
   var time = {
+    init: function () {
+      time.update();
+      setInterval(time.update, 60000);
+    },
     update: function () {
       var d = ap37.getDate();
       var timestr = d.year +
@@ -160,10 +163,6 @@
         leftPad(d.hour, 2, '0') + leftPad(d.minute, 2, '0');
       print(layout.time.left, layout.header.top, timestr);
       time.right = time.left + timestr.length;
-    },
-    init: function () {
-      time.update();
-      setInterval(time.update, 60000);
     },
     onTouch: function (x, y) {
       if(x >= layout.time.left && x < layout.time.right){//y tested by header
@@ -202,13 +201,12 @@
   };
 
   var battery = {
-    update: function () {
-      print(layout.battery.left, layout.header.top,
-        leftPad(ap37.getBatteryLevel(), 3, ' ')+'%');
-    },
     init: function () {
       battery.update();
       setInterval(battery.update, 60000);
+    },
+    update: function () {
+      print(layout.battery.left, layout.header.top,leftPad(ap37.getBatteryLevel(), 3, ' ')+'%');
     },
     onTouch : function (x,y){
      if(x >= layout.battery.left && x < layout.battery.right){
@@ -285,7 +283,7 @@
      update: function () {
        if ( layout.mode == 'home'){// Only display on home
          // first erase previous to avoid glitches
-         background.clear ( layout.asciiclock.left, w, layout.asciiclock.top , layout.asciiclock.height);
+         background.clear ( layout.asciiclock.left, w - layout.asciiclock.left, layout.asciiclock.top , layout.asciiclock.height);
          var d = ap37.getDate();
          let h1 = asciiclock.nums[ Math.floor ( d.hour / 10 ) ];
          let h2 = asciiclock.nums[ d.hour % 10 ];
@@ -345,10 +343,6 @@
   var notifications = {
     list: [],
     active: false,
-    init: function () {
-      ap37.setOnNotificationsListener(notifications.update);
-      notifications.update();
-    },
     guessapp: function (notification) { 
       for (var k in config.notifguesslist){
         if (notification.name.search(k)>=0){
@@ -357,21 +351,25 @@
         }
       }
     },
+    init: function () {
+      ap37.setOnNotificationsListener(notifications.update);
+      notifications.update();
+    },
     update: function () {
       notifications.active = ap37.notificationsActive();
       if (notifications.active) {
+        background.clear(0, w, layout.notifications.top, layout.notifications.height);
         // Clean scrollers on old notifs first
         for (let k in notifications.list){
           if (notifications.list[k].scroller ){
             notifications.list[k].scroller.clear();
           }
         }
-        var nots = ap37.getNotifications();
-        notifications.list = nots; 
+        notifications.list = ap37.getNotifications();
         // count notification per app
         let notificationcounter={};
-        for (let i in nots){
-          var notification = nots[i];
+        for (let i in notifications.list){
+          var notification = notifications.list[i];
           notifications.guessapp(notification);
           if (notification.appname){
             if (notification.appname in notificationcounter){
@@ -391,13 +389,12 @@
         }
         for (var i = 0; i < layout.notifications.height; i++) {// display max n notifications
           var y = i + layout.notifications.top;// print notifications from line 2
-          background.printPattern(0, w, y);//erase line first
-          if (i < nots.length) {
-            nots[i].y = y;
-            if (i == layout.notifications.height -1 && nots.length > layout.notifications.height) {
-              nots[i].ellipsis = true;// if last displayable notif and has more
+          if (i < notifications.list.length) {
+            notifications.list[i].y = y;
+            if (i == layout.notifications.height -1 && notifications.list.length > layout.notifications.height) {
+              notifications.list[i].ellipsis = true;// if last displayable notif and has more
             }
-            notifications.printNotification(nots[i], false);
+            notifications.printNotification(notifications.list[i], false);
           }
         }
       } else {
@@ -494,7 +491,7 @@
         for (let k in favorites.list){
           let app = favorites.list[k];
           if (x >= app.x0 && x <= app.xf) {
-            favorites.printApp(app, true);//highligth
+            favorites.printApp(app, true);//highlight
             ap37.openApp(app.id);
             return;
           }
@@ -538,7 +535,7 @@
       let appnum = apps.pagefirstappnum[page];
       let x = apps.margin;
       let y = layout.apps.top;
-      background.printPattern(0, w, y);
+      background.clear( 0,w, layout.apps.top, layout.apps.height);
       while(y < layout.apps.bottom && appnum < apps.list.length){
         let app = apps.list[appnum];
         if (layout.mode!='home' || config.homeApps.includes(app.name) ){//if 'home' mode, only get homeApps
@@ -548,10 +545,6 @@
             y += apps.lineHeight;//keep a blank line between rows
             if(y >= layout.apps.bottom -1){//out of screen, keep 1 for >>>
               apps.pagefirstappnum[page+1] = appnum;
-            } else {
-              for( let i=0; i < apps.lineHeight; i++){
-                background.printPattern(0, w, y-i);// clean new line
-              }
             }
           }
           if(y < layout.apps.bottom){
@@ -564,9 +557,6 @@
           }
         }
         appnum++;
-      }
-      for(let j=y+1;j < layout.apps.bottom; j++){
-        background.printPattern(0, w, j);//erase rest of the zone
       }
       if(page==0 && y < layout.apps.bottom ){
         apps.printPagination(false);// deactivate pagination
