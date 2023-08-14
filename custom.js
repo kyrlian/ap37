@@ -48,10 +48,10 @@
     // transmission and market height is 0 if not in layout home
     layout.transmissions =  recalc({ top: -1, height: (layout.mode == 'home' ? 5 : 0), bottom: layout.favorites.top, page: "home"});
     layout.markets =  recalc({ top: -1, height: (layout.mode == 'home' ? 3 : 0), bottom: layout.transmissions.top, page: "home"});
-    // TODO fix bottom and pagination 
+    // 
     layout.apps =  recalc({ top: layout.notifications.bottom +1,  height: -1, bottom: layout.markets.top, page: "all"});
     // adjust clock position in landscape orientation
-    layout.asciiclock =  recalc({ top: ( layout.orientation == 'portrait' ? layout.notifications.bottom + 2 : layout.header.bottom + 1 ), height: 5, bottom: -1, left:w-26, right: w, page: "home"});
+    layout.asciiclock =  recalc({ top: ( layout.orientation == 'portrait' ? layout.notifications.bottom + 5 : layout.header.bottom + 1 ), height: 5, bottom: -1, left:w-26, right: w, page: "home"});
    },
    toggle: function(){// toggle display mode
       layout.mode = (layout.mode == 'home') ? 'list' : 'home';//home or list
@@ -536,7 +536,7 @@
       let x = apps.margin;
       let y = layout.apps.top;
       background.clear( 0,w, layout.apps.top, layout.apps.height);
-      while(y < layout.apps.bottom && appnum < apps.list.length){
+      while(y < layout.apps.bottom -1 && appnum < apps.list.length){
         let app = apps.list[appnum];
         if (layout.mode!='home' || config.homeApps.includes(app.name) ){//if 'home' mode, only get homeApps
           let xshift = apps.getxshift(app);
@@ -545,9 +545,10 @@
             y += apps.lineHeight;//keep a blank line between rows
             if(y >= layout.apps.bottom -1){//out of screen, keep 1 for >>>
               apps.pagefirstappnum[page+1] = appnum;
+              apps.printPagination(true);// and activate pagination
             }
           }
-          if(y < layout.apps.bottom){
+          if(y < layout.apps.bottom - 1){
             app.x0 = x;
             app.y = y;
             app.page = page;
@@ -558,10 +559,10 @@
         }
         appnum++;
       }
-      if(page==0 && y < layout.apps.bottom ){
+      if(page==0 && y < layout.apps.bottom - 1){
         apps.printPagination(false);// deactivate pagination
-      }else{
-        apps.printPagination(true);// and activate pagination
+      } else {
+        apps.printPagination(true);
       }
     },
     printApp: function (app, highlight) {
@@ -629,7 +630,7 @@
           }
         }
       }
-      if (apps.isNextPageButtonVisible && y == layout.apps.bottom && x >= w - ">>>".length) {
+      if (apps.isNextPageButtonVisible && y == layout.apps.bottom -1 && x >= w - ">>>".length) {
         apps.currentPage++;
         if(!(apps.currentPage in apps.pagefirstappnum)){
             apps.currentPage = 0;
