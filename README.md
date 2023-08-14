@@ -9,9 +9,8 @@
   - Ability to hide some apps
   - Ability to rename some apps
   - Show favorite apps in the bottom
-  - Removed display glitches
-  - Removed markets
-  - Removed transmissions
+  - Show markets only in 'home' mode
+  - Show transmissions only in 'home' mode
 - [loader.js](./loader.js) loads a file from internet and uses it as a launcher script, good for testing.
 
 Original [ap37](https://github.com/apseren/ap37) README: 
