@@ -546,7 +546,7 @@
       if(page==0 && y < layout.apps.bottom ){
         apps.printPagination(false);// deactivate printPagination
       }
-      for(let j=y+1;j < layout.apps.bottom ;j++){
+      for(let j=y+1;j < layout.apps.bottom -1 ;j++){
         background.printPattern(0, w, j);//erase rest of the zone
       }
     },
@@ -577,6 +577,7 @@
       }
       if(onoff){
         apps.isNextPageButtonVisible = true;// activate pagination
+        background.printPattern(0,w, layout.apps.bottom-1 );
         print(w - 4, layout.apps.bottom -1, '>>>');
       } else {
         apps.isNextPageButtonVisible = false;
