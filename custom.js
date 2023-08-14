@@ -547,7 +547,6 @@
             y += apps.lineHeight;//keep a blank line between rows
             if(y >= layout.apps.bottom ){//out of screen
               apps.pagefirstappnum[page+1] = appnum;
-              apps.printPagination(true);// and activate pagination
             } else {
               for( let i=0; i < apps.lineHeight; i++){
                 background.printPattern(0, w, y-i);// clean new line
@@ -565,11 +564,13 @@
         }
         appnum++;
       }
+      for(let j=y+1;j < layout.apps.bottom; j++){
+        background.printPattern(0, w, j);//erase rest of the zone
+      }
       if(page==0 && y < layout.apps.bottom ){
         apps.printPagination(false);// deactivate pagination
-      }
-      for(let j=y+1;j < layout.apps.bottom -1 ;j++){
-        background.printPattern(0, w, j);//erase rest of the zone
+      }else{
+        apps.printPagination(true);// and activate pagination
       }
     },
     printApp: function (app, highlight) {
