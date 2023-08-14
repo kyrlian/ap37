@@ -275,7 +275,7 @@
       battery.update();
       setInterval(battery.update, 60000);
     },
-    onTouch : function (){
+    onTouch : function (x,y){
      if(x >= layout.battery.left && x < layout.battery.right){
       ap37.openApp( apps.getbyname("Settings").id);
      }
