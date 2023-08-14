@@ -100,6 +100,11 @@
     printPattern: function (x0, xf, y) {//redraw background for a single line
       print(x0, y, background.randomline(xf-x0), config.bgcolor);
     },
+    clear: function (x,width,y,height){
+      for(let i=0; i<height ; i++){
+        background.printPattern(x,x+width,y+i);
+      }
+    },
     init: function () {
       let buffer = []
       for (var i = 0; i < h; i++) {
@@ -213,9 +218,7 @@
      update: function () {
        if ( layout.mode == 'home'){// Only display on home
          // first erase previous to avoid glitches
-         for ( let j=0; j< layout.asciiclock.height; j++){
-           background.printPattern( layout.asciiclock.left, w, layout.asciiclock.top + j);
-         }
+         background.clear ( layout.asciiclock.left, w, layout.asciiclock.top , layout.asciiclock.height);
          var d = ap37.getDate();
          let h1 = asciiclock.nums[ Math.floor ( d.hour / 10 ) ];
          let h2 = asciiclock.nums[ d.hour % 10 ];
@@ -627,7 +630,7 @@
     },
     update: function () {
       if ( layout.mode == 'home'){// Only display on home
-        background.printPattern( 0,w, layout.markets.top);
+        background.clear ( 0, w, layout.markets.top , layout.markets.height);
         print(0, layout.markets.top, '// Markets', config.textcolordim);
         get('https://api.cryptowat.ch/markets/prices', function (response) {
           try {
@@ -652,7 +655,7 @@
     list: [],
     update: function () {
       if ( layout.mode == 'home'){// Only display on home
-        background.printPattern( 0,w, layout.transmissions.top);
+        background.clear( 0,w, layout.transmissions.top, layout.transmissions.height);
         print(0, layout.transmissions.top, '// Transmissions', config.textcolordim);
         get('https://hacker-news.firebaseio.com/v0/topstories.json', function (response) {
         try {
