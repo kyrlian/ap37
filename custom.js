@@ -66,7 +66,7 @@
 
   // easy debug
   function debugstuff(){//use this to display debug info in footer
-    debug(layout.orientation+" ");
+    debug(wordGlitch.active +" " +lineGlitch.active);
   }
 
   // init all modules - will be run after all modules are declared
@@ -307,15 +307,16 @@
   var footer = {
     x0: 0,
     xf: 0,
+    eof: "EOF",
     init: function () {
      // scrollers.create(0, w, footer.top, "  ░░▒▒▓▓▒▒░░".repeat(w/8), config.textcolordim);
       print(3, layout.footer.bottom-1, config.appversion);//bottom left
-      print(w-5, layout.footer.bottom - 1,  "EOF" );//bottom right
       footer.x0 = Math.floor(( (w - layout.mode.length) / 2) );
       footer.xf = footer.x0 + layout.mode.length ;
       footer.update();
     },
     update: function () {
+      print(w-5, layout.footer.bottom - 1,  footer.eof );//bottom right, changes to show glitch status
       print( footer.x0 , layout.footer.bottom-1, layout.mode.toUpperCase());//center
     },
     onTouch: function (x, y) {
@@ -327,10 +328,10 @@
           ap37.openLink("https://github.com/kyrlian/ap37");
         } else if ( x > w-5 ){ // bottom right, "EOF" toggles glitches
           //once to activate word only, twice to activate line only, trice for both, four for off
-          if(!wordGlitch.active && !lineGlitch.active){ wordGlitch.active = true; lineGlitch.active = false }
-          if( wordGlitch.active && !lineGlitch.active){ wordGlitch.active = false; lineGlitch.active = true }
-          if(!wordGlitch.active && lineGlitch.active){ wordGlitch.active = true; lineGlitch.active = true }
-          if( wordGlitch.active &&  lineGlitch.active){ wordGlitch.active = false; lineGlitch.active = false}
+          if(!wordGlitch.active && !lineGlitch.active){ wordGlitch.active = true; lineGlitch.active = false; footer.eof = 'eOF'}
+          else if( wordGlitch.active && !lineGlitch.active){ wordGlitch.active = false; lineGlitch.active = true ; footer.eof = 'EoF' }
+          else if(!wordGlitch.active && lineGlitch.active){ wordGlitch.active = true; lineGlitch.active = true ; footer.eof = 'eof' }
+          else if( wordGlitch.active &&  lineGlitch.active){ wordGlitch.active = false; lineGlitch.active = false ; footer.eof = 'EOF'}
           // wordGlitch.active = !wordGlitch.active;
           // lineGlitch.active = !lineGlitch.active;
           if (wordGlitch.active) {
