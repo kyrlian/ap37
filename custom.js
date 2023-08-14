@@ -14,6 +14,7 @@
    textcolordim:'#999999',
    textcolorbright:'#ffffff',
    textcolorclicked:'#ff3333',
+   textcolorglitch:'#666666',
   };
   // screen size
   ap37.setTextSize(13);
@@ -95,6 +96,9 @@
   // modules
   var background = {
     bgchars:'-._ /',
+    buffer: [],
+    bufferColors: [],
+    pattern: '',
     randomline: function(nbc){
       let line = "";
       for (let i = 0; i < nbc; i++) {
@@ -103,19 +107,32 @@
       return line;
     },
     printPattern: function (x0, xf, y) {//redraw background for a single line
-      print(x0, y, background.randomline(xf-x0), config.bgcolor);
+      //print(x0, y, background.randomline(xf-x0), config.bgcolor);
+      print(x0, y, background.pattern.substring(y * w + x0, y * w + xf), config.bgcolor);
     },
-    clear: function (x,width,y,height){
+    updatebuffer: function(x,y,text,color){
+      //update background buffer with text to be printed - used to restore glitches
+      background.buffer[y] = background.buffer[y].substr(0, x) + text + background.buffer[y].substr(x + text.length);
+      for (var i = x; i < x + text.length; i++) {
+        background.bufferColors[y][i] = color;
+      }
+    },
+    restorebuffer: function(x0, xf, y){
+      ap37.printMultipleColors(x0, y, background.buffer[y].substr(x0, xf), background.bufferColors[y].slice(x0, xf) );
+    },
+    clear: function (x, width, y, height){
       for(let i=0; i<height ; i++){
-        background.printPattern(x,x+width,y+i);
+        background.printPattern(x, x+width, y+i);
       }
     },
     init: function () {
-      let buffer = []
+      // background.pattern = rightPad(script, h * w, ' ');//original version
+      background.pattern = background.randomline(h * w);
       for (var i = 0; i < h; i++) {
-        buffer.push(background.randomline(w));
+        background.buffer.push(background.pattern.substr(i * w, w));
+        background.bufferColors.push(arrayFill(config.bgcolor, w));
       }
-      ap37.printLines(buffer, config.bgcolor);
+      ap37.printLines(background.buffer, config.bgcolor);
     }
   };
   
@@ -154,6 +171,50 @@
     }
   };
 
+
+  var meteo = {
+    meteourl:"",
+    init: function () {
+      let encodedloc = encodeURIComponent(config.city);
+      let geourl ="https://geocode.maps.co/search?q=%22#LOC#%22".replace("#LOC#", encodedloc);
+      get(geourl, function (response) {
+        let info = JSON.parse(response)[0];
+        let latitude = info.lat.substring(0,5);
+        let longitude = info.lon.substring(0,5);
+        let template="https://api.open-meteo.com/v1/forecast?latitude=#LAT#&longitude=#LONG#&current_weather=true&forecast_days=1";
+        meteo.meteourl = template.replace("#LAT#", latitude).replace("#LONG#",longitude);
+        meteo.update();
+      });
+      setInterval(meteo.update, 3600000);//1h
+    },
+    update: function () {
+       get(meteo.meteourl, function (response) {
+        let temperature = JSON.parse(response).current_weather.temperature;
+        print(layout.meteo.left, layout.header.top, temperature.toFixed(0)+"'C");
+       });
+    },
+    onTouch: function (x, y) {
+      if(x >= layout.meteo.left && x < layout.meteo.right){//y tested by header
+        ap37.openLink("https://duckduckgo.com/?q=meteo+"+encodeURIComponent(config.city));
+      }
+    }
+  };
+
+  var battery = {
+    update: function () {
+      print(layout.battery.left, layout.header.top,
+        leftPad(ap37.getBatteryLevel(), 3, ' ')+'%');
+    },
+    init: function () {
+      battery.update();
+      setInterval(battery.update, 60000);
+    },
+    onTouch : function (x,y){
+     if(x >= layout.battery.left && x < layout.battery.right){
+      ap37.openApp( apps.getbyname("Settings").id);
+     }
+    },
+  };
 
   var asciiclock = { 
   nums:[["▄▄▄▄▄",
@@ -243,74 +304,36 @@
      }
   };
 
-  var meteo = {
-    meteourl:"",
-    init: function () {
-      let encodedloc = encodeURIComponent(config.city);
-      let geourl ="https://geocode.maps.co/search?q=%22#LOC#%22".replace("#LOC#", encodedloc);
-      get(geourl, function (response) {
-        let info = JSON.parse(response)[0];
-        let latitude = info.lat.substring(0,5);
-        let longitude = info.lon.substring(0,5);
-        let template="https://api.open-meteo.com/v1/forecast?latitude=#LAT#&longitude=#LONG#&current_weather=true&forecast_days=1";
-        meteo.meteourl = template.replace("#LAT#", latitude).replace("#LONG#",longitude);
-        meteo.update();
-      });
-      setInterval(meteo.update, 3600000);//1h
-    },
-    update: function () {
-       get(meteo.meteourl, function (response) {
-        let temperature = JSON.parse(response).current_weather.temperature;
-        print(layout.meteo.left, layout.header.top, temperature.toFixed(0)+"'C");
-       });
-    },
-    onTouch: function (x, y) {
-      if(x >= layout.meteo.left && x < layout.meteo.right){//y tested by header
-        ap37.openLink("https://duckduckgo.com/?q=meteo+"+encodeURIComponent(config.city));
-      }
-    }
-  };
-
-  var battery = {
-    update: function () {
-      print(layout.battery.left, layout.header.top,
-        leftPad(ap37.getBatteryLevel(), 3, ' ')+'%');
-    },
-    init: function () {
-      battery.update();
-      setInterval(battery.update, 60000);
-    },
-    onTouch : function (x,y){
-     if(x >= layout.battery.left && x < layout.battery.right){
-      ap37.openApp( apps.getbyname("Settings").id);
-     }
-    },
-  };
-
-
   var footer = {
     x0: 0,
     xf: 0,
     init: function () {
      // scrollers.create(0, w, footer.top, "  ░░▒▒▓▓▒▒░░".repeat(w/8), config.textcolordim);
       print(3, layout.footer.bottom-1, config.appversion);//bottom left
+      print(w-5, layout.footer.bottom - 1,  "EOF" );//bottom right
       footer.x0 = Math.floor(( (w - layout.mode.length) / 2) );
       footer.xf = footer.x0 + layout.mode.length ;
-      print(w-5, layout.footer.bottom - 1,  "EOF" );//bottom right
       footer.update();
     },
     update: function () {
-      print( footer.x0 , layout.footer.bottom-1, layout.mode.toUpperCase());
+      print( footer.x0 , layout.footer.bottom-1, layout.mode.toUpperCase());//center
     },
     onTouch: function (x, y) {
       if (y >= layout.footer.top && y < layout.footer.bottom ) {
-        if (x >= footer.x0 && x < footer.xf ){//y tested by footer
+        if (x >= footer.x0 && x < footer.xf ){//center home/list button
           layout.toggle();
           footer.update();
-        } else if ( x < config.appversion.length ){
+        } else if ( x < config.appversion.length ){ // bottom left, app version
           ap37.openLink("https://github.com/kyrlian/ap37");
-        } else if ( x > w-5 ){
-          // TODO  toggle glitches
+        } else if ( x > w-5 ){ // bottom right, "EOF" toggles glitches
+          wordGlitch.active = !wordGlitch.active;
+          if (wordGlitch.active) {
+            wordGlitch.intervalId = setInterval(wordGlitch.update, 100);
+          }
+          lineGlitch.active = !lineGlitch.active;
+          if (lineGlitch.active) {
+            lineGlitch.intervalId = setInterval(lineGlitch.update, 200);
+          }
         }else{
           debugstuff();// run debug display on footer touch
         }
@@ -544,7 +567,7 @@
         appnum++;
       }
       if(page==0 && y < layout.apps.bottom ){
-        apps.printPagination(false);// deactivate printPagination
+        apps.printPagination(false);// deactivate pagination
       }
       for(let j=y+1;j < layout.apps.bottom -1 ;j++){
         background.printPattern(0, w, j);//erase rest of the zone
@@ -572,9 +595,6 @@
       }
     },
     printPagination: function(onoff) {
-      if(onoff == ""){//if call with neither true or false, just print
-        onoff = apps.isNextPageButtonVisible;// TODO used ?
-      }
       if(onoff){
         apps.isNextPageButtonVisible = true;// activate pagination
         background.printPattern(0,w, layout.apps.bottom-1 );
@@ -603,9 +623,6 @@
     update: function() {
       if ( layout.mode == 'list' || layout.orientation == 'portrait'){
         apps.printPage(apps.currentPage);
-      }// TODO move this to layout.update 
-      if ( layout.mode == 'home' ){
-        asciiclock.update();
       }
     },
     onTouch: function (x, y) {
@@ -691,7 +708,7 @@
     },
     printTransmission: function (transmission, highlight) {
       print(0, transmission.y, transmission.title,
-        highlight ? config.textcolorclicked : config.textcolordim );// TODO replace colors with config colors 
+        highlight ? config.textcolorclicked : config.textcolordim ); 
       if (highlight) {
         setTimeout(function () {
           transmissions.printTransmission(transmission, false);
@@ -717,7 +734,6 @@
     },
   };
 
-  // TODO restore display glitches
   var wordGlitch = {
     tick: 0,
     length: 0,
@@ -732,36 +748,23 @@
         g.length = 5 + Math.floor(Math.random() * 6);
         g.x = Math.floor(Math.random() * (w - g.length));
         g.y = Math.floor(Math.random() * h);
-
         g.text = [];
         for (var i = 0; i < 5; i++) {
           g.text.push(Math.random().toString(36).substr(2, g.length));
         }
-
-        ap37.print(g.x, g.y, g.text[g.tick], '#666666');
+        ap37.print(g.x, g.y, g.text[g.tick], config.textcolorglitch);
         g.tick++;
       } else if (g.tick === 5) { // remove glitch
-        ap37.printMultipleColors(g.x, g.y,
-          background.buffer[g.y].substr(g.x, g.length),
-          background.bufferColors[g.y].slice(g.x, g.x + g.length)
-        );
+        restorebuffer(g.x, g.x + g.length, g.y);
         g.tick = 0;
         if (!wordGlitch.active) {
           clearInterval(wordGlitch.intervalId);
         }
       } else {
-        ap37.print(g.x, g.y, g.text[g.tick], '#666666');
+        ap37.print(g.x, g.y, g.text[g.tick], config.textcolorglitch);
         g.tick++;
       }
     },
-    onTouch: function (x, y) {
-      if (x > w - 6 && y > h - 4) {
-        wordGlitch.active = !wordGlitch.active;
-        if (wordGlitch.active) {
-          wordGlitch.intervalId = setInterval(wordGlitch.update, 100);
-        }
-      }
-    }
   };
 
   var lineGlitch = {
@@ -773,44 +776,27 @@
       var g = lineGlitch;
       if (g.tick === 0) { // shift line
         g.line = 1 + Math.floor(Math.random() * h - 1);
-
-        var offset = 1 + Math.floor(Math.random() * 4),
-          direction = Math.random() >= 0.5;
-
+        var offset = 1 + Math.floor(Math.random() * 4);
+        let direction = Math.random() >= 0.5;
         if (direction) {
           ap37.printMultipleColors(0, g.line,
-            rightPad(
-              background.buffer[g.line].substring(offset), w,
-              ' '),
+            rightPad(background.buffer[g.line].substring(offset), w,' '),
             background.bufferColors[g.line].slice(offset));
         } else {
           ap37.printMultipleColors(0, g.line,
-            leftPad(background.buffer[g.line]
-              .substring(0, w - offset), w, ' '),
-            arrayFill('#ffffff', offset)
-              .concat(background.bufferColors[g.line]
-                .slice(0, w - offset))
+            leftPad(background.buffer[g.line].substring(0, w - offset), w, ' '),
+            arrayFill(config.textcolorbright, offset).concat(background.bufferColors[g.line].slice(0, w - offset))
           );
         }
         g.tick++;
       } else { // restore line
-        ap37.printMultipleColors(
-          0, g.line, background.buffer[g.line],
-          background.bufferColors[g.line]);
+        restorebuffer(0, w, g.line);
         g.tick = 0;
         if (!lineGlitch.active) {
           clearInterval(lineGlitch.intervalId);
         }
       }
     },
-    onTouch: function (x, y) {
-      if (x > w - 6 && y > h - 4) {
-        lineGlitch.active = !lineGlitch.active;
-        if (lineGlitch.active) {
-          lineGlitch.intervalId = setInterval(lineGlitch.update, 200);
-        }
-      }
-    }
   };
 
 
@@ -835,6 +821,7 @@
 
   function print(x, y, text, color) {
     let rcolor =  color || config.textcolorbright;
+    background.updatebuffer(x,y,text,rcolor);
     ap37.print(x, y, text, rcolor);
   }
 
@@ -950,7 +937,7 @@
   let debugScroller = null;//dont init at load - only when needed
   function debug(obj){
     let str = ""+obj;
-    if ( str.indexOf("object" )>=0){// TODO  test on array of objects . alt: (""+obj).contains ("object")
+    if ( str.indexOf("object" )>=0){
       str = JSON.stringify(obj);
     }
     if (debugScroller === null){//init at first call
