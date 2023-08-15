@@ -11,6 +11,8 @@
   - Show favorite apps in the bottom
   - Show markets only in 'home' mode
   - Show transmissions only in 'home' mode
+  - Adapt layout in landscape orientation
+  - Activate word and line glitches one by one
 - [loader.js](./loader.js) loads a file from internet and uses it as a launcher script, good for testing.
 
 Original [ap37](https://github.com/apseren/ap37) README: 
