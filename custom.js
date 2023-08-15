@@ -359,7 +359,7 @@
     update: function () {
       notifications.active = ap37.notificationsActive();
       if (notifications.active) {
-        background.clear(0, w, layout.notifications.top, layout.notifications.height);
+        background.clear(0, w, layout.notifications.top, layout.notifications.bottom);
         // Clean scrollers on old notifs first
         for (let k in notifications.list){
           if (notifications.list[k].scroller ){
