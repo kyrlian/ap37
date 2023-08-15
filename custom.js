@@ -57,6 +57,7 @@
       layout.mode = (layout.mode == 'home') ? 'list' : 'home';//home or list
       layout.update();
       apps.currentPage = 0;
+      background.clear ( 0, w, layout.apps.top , layout.transmissions.bottom);
       apps.update();
       asciiclock.update();
       markets.update();
@@ -120,9 +121,9 @@
     restorebuffer: function(x0, xf, y){
       ap37.printMultipleColors(x0, y, background.buffer[y].substr(x0, xf), background.bufferColors[y].slice(x0, xf) );
     },
-    clear: function (x, width, y, height){
-      for(let i=0; i<height ; i++){
-        background.printPattern(x, x+width, y+i);
+    clear: function (x0,xf ,y0, yf){
+      for(let i=y0; i<yf ; i++){
+        background.printPattern(x0, xf, i);
       }
     },
     init: function () {
@@ -283,7 +284,7 @@
      update: function () {
        if ( layout.mode == 'home'){// Only display on home
          // first erase previous to avoid glitches
-         background.clear ( layout.asciiclock.left, w - layout.asciiclock.left, layout.asciiclock.top , layout.asciiclock.height);
+         background.clear ( layout.asciiclock.left, layout.asciiclock.right, layout.asciiclock.top , layout.asciiclock.bottom);
          var d = ap37.getDate();
          let h1 = asciiclock.nums[ Math.floor ( d.hour / 10 ) ];
          let h2 = asciiclock.nums[ d.hour % 10 ];
@@ -535,7 +536,7 @@
       let appnum = apps.pagefirstappnum[page];
       let x = apps.margin;
       let y = layout.apps.top;
-      background.clear( 0,w, layout.apps.top, layout.apps.height);
+     // background.clear( 0,w, layout.apps.top, layout.apps.bottom);
       while(y < layout.apps.bottom -1 && appnum < apps.list.length){
         let app = apps.list[appnum];
         if (layout.mode!='home' || config.homeApps.includes(app.name) ){//if 'home' mode, only get homeApps
@@ -647,7 +648,7 @@
     },
     update: function () {
       if ( layout.mode == 'home'){// Only display on home
-        background.clear ( 0, w, layout.markets.top , layout.markets.height);
+        background.clear ( 0, w, layout.markets.top , layout.markets.bottom);
         print(0, layout.markets.top, '// Markets', config.textcolordim);
         get('https://api.cryptowat.ch/markets/prices', function (response) {
           try {
@@ -672,7 +673,7 @@
     list: [],
     update: function () {
       if ( layout.mode == 'home'){// Only display on home
-        background.clear( 0,w, layout.transmissions.top, layout.transmissions.height);
+        background.clear( 0,w, layout.transmissions.top, layout.transmissions.bottom);
         print(0, layout.transmissions.top, '// Transmissions', config.textcolordim);
         get('https://hacker-news.firebaseio.com/v0/topstories.json', function (response) {
         try {
@@ -696,14 +697,33 @@
         } catch (e) {
         }
       });// end of get callback
+     } else { // not in home mode, stop scrollers
+        for (var k in transmissions.list) {
+          let transmission = transmissions.list[k];
+          if ( transmission.scroller ){
+            transmission.scroller.clear();
+          }
+        }
      }
     },
     printTransmission: function (transmission, highlight) {
-      print(0, transmission.y, transmission.title,
-        highlight ? config.textcolorclicked : config.textcolordim ); 
+      let tcolor = highlight ? config.textcolorclicked : config.textcolordim;
+      if ( transmission.title.length > w){// if notif doesnt fit, create a scroller
+        if ( ! transmission.scroller ){
+          transmission.scroller = scrollers.create(0, w, transmission.y, transmission.title +" - " , tcolor);
+        } else {// scroller already exists, might be clicked and need color update
+          transmission.scroller.color = tcolor;
+        }
+      } else {
+        print(0, transmission.y, transmission.title, tcolor ); 
+      }
       if (highlight) {
         setTimeout(function () {
-          transmissions.printTransmission(transmission, false);
+          if ( transmission.scroller ){
+            transmission.scroller.clear();
+          } else {
+            transmissions.printTransmission(transmission, false);
+          }
         }, 1000);
       }
     },
