@@ -536,7 +536,7 @@
       let appnum = apps.pagefirstappnum[page];
       let x = apps.margin;
       let y = layout.apps.top;
-     // background.clear( 0,w, layout.apps.top, layout.apps.bottom);
+      background.clear( 0,w, layout.apps.top, layout.apps.bottom);
       while(y < layout.apps.bottom -1 && appnum < apps.list.length){
         let app = apps.list[appnum];
         if (layout.mode!='home' || config.homeApps.includes(app.name) ){//if 'home' mode, only get homeApps
