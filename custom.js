@@ -343,6 +343,7 @@
 
   var notifications = {
     list: [],
+    scroll : false,
     active: false,
     guessapp: function (notification) { 
       for (var k in config.notifguesslist){
@@ -361,11 +362,8 @@
       if (notifications.active) {
         background.clear(0, w, layout.notifications.top, layout.notifications.bottom);
         // Clean scrollers on old notifs first
-        for (let k in notifications.list){
-          if (notifications.list[k].scroller ){
-            notifications.list[k].scroller.clear();
-          }
-        }
+        scrollers.clear(notifications.list);
+        // get current notifications list 
         notifications.list = ap37.getNotifications();
         // count notification per app
         let notificationcounter={};
@@ -411,7 +409,7 @@
           (notifications.list.length -  layout.notifications.height); //last notification with: name... number of remaining notifs
       }
       let ncolor = (highlight ? config.textcolorclicked : config.textcolorbright);
-      if ( disp.length > w){// if notif doesnt fit, create a scroller
+      if ( disp.length > w && notifications.scroll ){// if notif doesnt fit, create a scroller
         if ( ! notification.scroller ){
           notification.scroller = scrollers.create(0, w, notification.y, disp +" - ", ncolor);
         } else {// scroller already exists, might be clicked and need color update
@@ -671,6 +669,7 @@
 
   var transmissions = {
     list: [],
+    scroll: false,
     update: function () {
       if ( layout.mode == 'home'){// Only display on home
         background.clear( 0,w, layout.transmissions.top, layout.transmissions.bottom);
@@ -679,6 +678,9 @@
         try {
           var result = JSON.parse(response);
           let line = layout.transmissions.top + 1;
+          // clear current scrollers first
+          scrollers.clear(transmissions.list);
+          // now reset list
           transmissions.list = [];
           for (var i = 0; i < result.length && i < layout.transmissions.height-2; i++) {
             get('https://hacker-news.firebaseio.com/v0/item/' + result[i] + '.json', function (itemResponse) {
@@ -698,17 +700,12 @@
         }
       });// end of get callback
      } else { // not in home mode, stop scrollers
-        for (var k in transmissions.list) {
-          let transmission = transmissions.list[k];
-          if ( transmission.scroller ){
-            transmission.scroller.clear();
-          }
-        }
+        scrollers.clear(transmissions.list); 
      }
     },
     printTransmission: function (transmission, highlight) {
       let tcolor = highlight ? config.textcolorclicked : config.textcolordim;
-      if ( transmission.title.length > w){// if notif doesnt fit, create a scroller
+      if ( transmission.title.length > w && transmissions.scroll ){// if notif doesnt fit, create a scroller
         if ( ! transmission.scroller ){
           transmission.scroller = scrollers.create(0, w, transmission.y, transmission.title +" - " , tcolor);
         } else {// scroller already exists, might be clicked and need color update
@@ -870,6 +867,14 @@
        }
      } 
     },
+   clear: function(objlist){
+     for (var k in objlist) {
+          let obj = objlist[k];
+          if ( obj.scroller ){
+            obj.scroller.clear();
+          }
+        }
+   },
    create: function(x0, xf, ay, astr, acolor){
     var scroller = {
       str: astr,
