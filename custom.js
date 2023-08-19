@@ -104,7 +104,7 @@
 
   // modules
   var background = {
-    bgchars:'-._ /',
+    bgchars:'             -..._/',
     buffer: [],
     bufferColors: [],
     pattern: '',
