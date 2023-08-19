@@ -16,6 +16,12 @@
    textcolorclicked:'#ff3333',
    textcolorglitch:'#666666',
   };
+
+  // easy debug, called by footer 
+  function debugstuff(){//use this to display debug info in footer
+   // debug(wordGlitch.active +" " +lineGlitch.active);
+  }
+
   // screen size
   ap37.setTextSize(13);
   var w = ap37.getScreenWidth();
@@ -28,7 +34,9 @@
    init: function(){
     layout.update();
    },
-   update: function (){// used below, directly, to handle resize beetween home and list modes by calling reset
+   update: function (){// used below, directly
+    // handles resize beetween home and list modes by calling reset
+    // handles hidding modules by setting a height of 0
     w = ap37.getScreenWidth();
     h = ap37.getScreenHeight();
     function recalc(layinfo){
@@ -42,9 +50,9 @@
      layout.time = recalc( {left: 3, right: 3+13});
      layout.meteo =  recalc({left: w - 10, right: w-10+4});
      layout.battery =  recalc({left: w - 6, right: w});
-    layout.notifications =  recalc({  top: layout.header.bottom, height: 6, bottom: -1, page: "all"});//-1 will be calculated
+    layout.notifications =  recalc({  top: layout.header.bottom, height:layout.mode == 'home' ? 6:0, bottom: -1, page: "all"});//-1 will be calculated
     layout.footer = recalc( { top: -1, height: 2, bottom: h, page: "all"});
-    layout.favorites =  recalc({ top: -1, height: 2, bottom: layout.footer.top, page: "all"});
+    layout.favorites =  recalc({ top: -1, height: layout.mode == 'home' ? 2:0, bottom: layout.footer.top, page: "all"});
     // transmission and market height is 0 if not in layout home
     layout.hidetransmissions = true ;// set to false to show transmission on home page
     layout.hidemarkets= true;// set to false to show markets on home page 
@@ -59,19 +67,16 @@
       layout.mode = (layout.mode == 'home') ? 'list' : 'home';//home or list
       layout.update();
       apps.currentPage = 0;
-      background.clear ( 0, w, layout.apps.top , layout.transmissions.bottom);
+      background.clear ( 0, w, layout.notifications.top , layout.transmissions.bottom);
+      notifications.update();
       apps.update();
       asciiclock.update();
+      favorites.update()
       markets.update();
       transmissions.update();
       footer.update();
    }
   };
-
-  // easy debug
-  function debugstuff(){//use this to display debug info in footer
-    debug(wordGlitch.active +" " +lineGlitch.active);
-  }
 
   // init all modules - will be run after all modules are declared
   function init() {
@@ -360,6 +365,7 @@
       notifications.update();
     },
     update: function () {
+     if ( layout.notifications.height >0){
       notifications.active = ap37.notificationsActive();
       if (notifications.active) {
         background.clear(0, w, layout.notifications.top, layout.notifications.bottom);
@@ -401,6 +407,7 @@
       } else {
         print(0, layout.notifications.top, 'Activate notifications');
       }
+     }
     },
     printNotification: function (notification, highlight) {
       var name = notification.name;
@@ -469,6 +476,10 @@
       }
       favorites.spacing = Math.floor( (w - totalDisplayLen ) / (favorites.list.length - 1));
       favorites.margin = Math.floor((w - totalDisplayLen - (favorites.list.length - 1) * favorites.spacing ) / 2);
+      favorites.update();
+    },
+    update: function (){
+     if (layout.favorites.height>0){
       let x = favorites.margin;
       for (let k in favorites.list){//compute positions and draw
         let app = favorites.list[k];
@@ -478,6 +489,7 @@
         x = app.xf + favorites.spacing;
         favorites.printApp(app, false);
       }
+     }
     },
     printApp: function (app, highlight) {
       print(app.x0, app.y, app.favoriteDisplay, highlight ? config.textcolorclicked : config.textcolorbright);
