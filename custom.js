@@ -46,8 +46,10 @@
     layout.footer = recalc( { top: -1, height: 2, bottom: h, page: "all"});
     layout.favorites =  recalc({ top: -1, height: 2, bottom: layout.footer.top, page: "all"});
     // transmission and market height is 0 if not in layout home
-    layout.transmissions =  recalc({ top: -1, height: (layout.mode == 'home' ? 5 : 0), bottom: layout.favorites.top, page: "home"});
-    layout.markets =  recalc({ top: -1, height: (layout.mode == 'home' ? 3 : 0), bottom: layout.transmissions.top, page: "home"});
+    layout.hidetransmissions = true ;// set to false to show transmission on home page
+    layout.hidemarkets= true;// set to false to show markets on home page 
+    layout.transmissions =  recalc({ top: -1, height: (layout.mode == 'home' && ! layout.hidetransmissions ? 5 : 0), bottom: layout.favorites.top, page: "home"});
+    layout.markets =  recalc({ top: -1, height: (layout.mode == 'home' && ! layout.hidemarkets ? 3 : 0), bottom: layout.transmissions.top, page: "home"});
     // 
     layout.apps =  recalc({ top: layout.notifications.bottom +1,  height: -1, bottom: layout.markets.top, page: "all"});
     // adjust clock position in landscape orientation
@@ -645,7 +647,7 @@
       setInterval(markets.update, 60000);
     },
     update: function () {
-      if ( layout.mode == 'home'){// Only display on home
+      if ( layout.markets.height >0){// Only display on home
         background.clear ( 0, w, layout.markets.top , layout.markets.bottom);
         print(0, layout.markets.top, '// Markets', config.textcolordim);
         get('https://api.cryptowat.ch/markets/prices', function (response) {
@@ -671,7 +673,7 @@
     list: [],
     scroll: false,
     update: function () {
-      if ( layout.mode == 'home'){// Only display on home
+      if ( layout.transmissions.height>0){// layout.mode == 'home'){ // Only display on home
         background.clear( 0,w, layout.transmissions.top, layout.transmissions.bottom);
         print(0, layout.transmissions.top, '// Transmissions', config.textcolordim);
         get('https://hacker-news.firebaseio.com/v0/topstories.json', function (response) {
@@ -729,7 +731,7 @@
       setInterval(transmissions.update, 3600000);
     },
     onTouch: function (x, y) {
-      if ( layout.mode == 'home'){// Only display on home
+      if ( layout.transmissions.height > 0 ){//layout.mode == 'home'){// Only display on home
         for (var k in transmissions.list) {
           let transmission = transmissions.list[k];
           if (transmission.y === y &&
