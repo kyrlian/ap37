@@ -76,7 +76,7 @@
       markets.update();
       transmissions.update();
       footer.update();
-   }
+   },
   };
 
   // init all modules - will be run after all modules are declared
@@ -92,20 +92,24 @@
     favorites.init();
     footer.init();
     ap37.setOnTouchListener(function (x, y) {
-      header.onTouch(x, y);
-      apps.onTouch(x, y);
-      notifications.onTouch(x, y);
-      asciiclock.onTouch(x, y);
-      transmissions.onTouch(x,y);
-      favorites.onTouch(x, y);
-      footer.onTouch(x,y);
-      scrollers.onTouch(x,y);
+      let a = header.onTouch(x, y);
+      let b = apps.onTouch(x, y);
+      let c = notifications.onTouch(x, y);
+      let d = asciiclock.onTouch(x, y);
+      let e = transmissions.onTouch(x,y);
+      let f = favorites.onTouch(x, y);
+      let g = footer.onTouch(x,y);
+      let h = scrollers.onTouch(x,y);
+      if ( ! ( a || b || c || d || e || f || g || h )){
+        // if all false toggle layout.mode 
+        background.onTouch(x,y);
+      }
     });
   }
 
   // modules
   var background = {
-    bgchars:'             -..._/',
+    bgchars:'             -..._/',// add more chars to vary background
     buffer: [],
     bufferColors: [],
     pattern: '',
@@ -142,7 +146,10 @@
         background.bufferColors.push(arrayFill(config.bgcolor, w));
       }
       ap37.printLines(background.buffer, config.bgcolor);
-    }
+    },
+    onTouch: function (x,y) {
+      layout.toggle();
+    },
   };
   
   var header = {
@@ -153,9 +160,10 @@
     },
     onTouch: function (x, y) {
       if(y >= layout.header.top && y < layout.header.bottom){
-        time.onTouch(x,y);
-        meteo.onTouch(x,y);
-        battery.onTouch(x,y);
+        let a = time.onTouch(x,y);
+        let b = meteo.onTouch(x,y);
+        let c = battery.onTouch(x,y);
+        return a || b || c;
       }
     },
   };
@@ -176,6 +184,7 @@
     onTouch: function (x, y) {
       if(x >= layout.time.left && x < layout.time.right){//y tested by header
         ap37.openApp( apps.getbyname("Clock").id);
+        return true;
       }
     }
   };
@@ -205,6 +214,7 @@
     onTouch: function (x, y) {
       if(x >= layout.meteo.left && x < layout.meteo.right){//y tested by header
         ap37.openLink("https://duckduckgo.com/?q=meteo+"+encodeURIComponent(config.city));
+        return true;
       }
     }
   };
@@ -220,6 +230,7 @@
     onTouch : function (x,y){
      if(x >= layout.battery.left && x < layout.battery.right){
       ap37.openApp( apps.getbyname("Settings").id);
+      return true;
      }
     },
   };
@@ -310,6 +321,7 @@
      onTouch: function (x, y) {
       if(  layout.mode == 'home' &&  x >= layout.asciiclock.left && x < layout.asciiclock.right && y >= layout.asciiclock.top && y < layout.asciiclock.bottom ){
         ap37.openApp( apps.getbyname("Clock").id);
+        return true;
       }
      }
   };
@@ -343,11 +355,12 @@
           else if(!wordGlitch.active && lineGlitch.active){ wordGlitch.activate(); lineGlitch.activate() ; footer.eof = 'eof' }
           else if( wordGlitch.active &&  lineGlitch.active){ wordGlitch.active = false; lineGlitch.active = false ; footer.eof = 'EOF'}
           footer.update();
-        }else{
+        } else {
           debugstuff();// run debug display on footer touch
         }
+        return true;
       }
-    }
+    },
    };
 
 
@@ -441,21 +454,22 @@
       }
     },
     onTouch: function (x, y) {
-      if (notifications.active) {
-        if(y >= layout.notifications.top && y < layout.notifications.bottom ){
+      if(y >= layout.notifications.top && y < layout.notifications.bottom ){
+        if (notifications.active) {
           for (var i in notifications.list ) {
             let n = notifications.list[i]
             if (n.y === y) {
               notifications.printNotification(n, true);// highlight touched
               ap37.openNotification(n.id);// and open
-              return;
+              return true;
             }
           }
+        } else if (y === layout.notifications.top ) {// permission request alert on line  3
+           ap37.requestNotificationsPermission();
         }
-      } else if (y === layout.notifications.top ) {// permission request alert on line  3
-        ap37.requestNotificationsPermission();
+        return true;
       }
-    }
+    },
   };
 
   var favorites = {
@@ -513,11 +527,11 @@
           if (x >= app.x0 && x <= app.xf) {
             favorites.printApp(app, true);//highlight
             ap37.openApp(app.id);
-            return;
+            return true;
           }
         }
       }
-    }
+    },
   };
 
   var apps = {
@@ -645,7 +659,7 @@
             if (y >= app.y && y < app.y + apps.lineHeight && x >= app.x0 && x <= app.xf) {
               apps.printApp(app, true);
               ap37.openApp(app.id);
-              return;
+              return true;
             }
           }
         }
@@ -656,8 +670,9 @@
             apps.currentPage = 0;
         }
         apps.update();
+        return true;
       }
-    }
+    },
   };
 
   var markets = {
@@ -757,7 +772,7 @@
             x <= transmission.title.length) {
             transmissions.printTransmission(transmission, true);
             ap37.openLink(transmission.url);
-            return;
+            return true;
           }
         }
       }
