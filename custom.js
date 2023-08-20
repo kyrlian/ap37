@@ -7,8 +7,9 @@
    city:"Paris, France",
    hideApps:["ap37","Internet","Google", "Freebox","Hacker's Keyboard","Play Games","Samsung O","Steam Chat","Steam Link"],
    homeApps:["Citymapper","Clash Royale","Firefox","foobar2000","Inoreader","Keep Notes", "Messages","VLC"],
-   favoriteApps:["Phone","Signal","Gmail","Maps","Camera"],
-   appDisplayName:{"My Files":"Files","foobar2000":"foobar","Mars: Mars":"Mars","Coding Python" : "Python", "Freebox Connect" : "Freebox","G7 Taxi" : "G7","Keep Notes" : "Keep","Linux Command Library" : "Linux Command","Mandel Browser" : "Mandelbrot","Picturesaurus for Reddit" : "Picturesaurus","Simple Text Editor" : "TextEdit","SNCF Connect" : "SNCF"},
+   // favoriteApps:["Phone","Signal","Gmail","Maps","Camera"], 
+   favoriteApps:{"Phone":"P", "Signal":"s", "Gmail":"@", "Maps":"M", "Camera":"C" }, // todo use unicode symbols
+   appDisplayName:{"My Files":"Files","foobar2000":"foobar","Mars: Mars":"Mars","Coding Python" : "Python", "Freebox Connect" : "Freebox", "G7 Taxi" : "G7","Keep Notes" : "Keep","Linux Command Library" : "Linux Command","Mandel Browser" : "Mandelbrot","Picturesaurus for Reddit" : "Picturesaurus","Simple Text Editor" : "TextEdit","SNCF Connect" : "SNCF"},
    notifguesslist:{"Bing":"Bing","photos auto-added":"Photos"," years ago":"Photos"," Chest unlocked":"Clash Royale","card request":"Clash Royale", "new messages":"Gmail"},
    bgcolor:'#333333',
    textcolordim:'#999999',
@@ -59,9 +60,9 @@
     layout.transmissions =  recalc({ top: -1, height: (layout.mode == 'home' && ! layout.hidetransmissions ? 5 : 0), bottom: layout.favorites.top, page: "home"});
     layout.markets =  recalc({ top: -1, height: (layout.mode == 'home' && ! layout.hidemarkets ? 3 : 0), bottom: layout.transmissions.top, page: "home"});
     // 
-    layout.apps =  recalc({ top: layout.notifications.bottom +1,  height: -1, bottom: layout.markets.top, page: "all"});
+    layout.apps =  recalc({ top: layout.notifications.bottom + 3,  height: -1, bottom: layout.markets.top, page: "all"});
     // adjust clock position in landscape orientation
-    layout.asciiclock =  recalc({ top: ( layout.orientation == 'portrait' ? layout.notifications.bottom + 5 : layout.header.bottom + 1 ), height: 5, bottom: -1, left:w-26, right: w, page: "home"});
+    layout.asciiclock =  recalc({ top: ( layout.orientation == 'portrait' ? layout.notifications.bottom + 5 : layout.header.bottom + 5 ), height: 5, bottom: -1, left:w-26, right: w, page: "home"});
    },
    toggle: function(){// toggle display mode
       layout.mode = (layout.mode == 'home') ? 'list' : 'home';//home or list
@@ -307,7 +308,7 @@
        }
      },
      onTouch: function (x, y) {
-      if(  layout.mode == 'home' &&  x >= layout.asciiclock.left && x < layout.asciiclock.right && y >= layout.asciiclock.top && y < layout.asciiclock.bottom ){//y tested by header
+      if(  layout.mode == 'home' &&  x >= layout.asciiclock.left && x < layout.asciiclock.right && y >= layout.asciiclock.top && y < layout.asciiclock.bottom ){
         ap37.openApp( apps.getbyname("Clock").id);
       }
      }
@@ -464,17 +465,21 @@
     spacing:0,
     margin:0,
     init: function () {
-      favorites.list = Array(config.favoriteApps.length)//init so we can put at the correct place
+      // favorites.list = Array(config.favoriteApps.length)//init so we can put at the correct place
       let appslist = ap37.getApps();
       let totalDisplayLen = 0
-      for (let k in appslist){
-        let app = appslist[k];
-        if (config.favoriteApps.includes(app.name)){//init list
-          apps.getdisplayname(app);
-          app.favoriteDisplay = favorites.prefix + app.displayname + favorites.postfix;
-          favorites.list[config.favoriteApps.indexOf(app.name)] = app;
-          totalDisplayLen += app.favoriteDisplay.length;
+      for (let favname in config.favoriteApps){
+        for (let ka in appslist){
+          let app = appslist[ka];
+           if (app.name == favname ){
+            apps.getdisplayname(app);
+            // app.favoriteDisplay = favorites.prefix + app.displayname + favorites.postfix;
+            app.favoriteDisplay = favorites.prefix + config.favoriteApps[favname] + favorites.postfix;
+            //favorites.list[config.favoriteApps.indexOf(app.name)] = app;
+            favorites.list.push(app)
+            totalDisplayLen += app.favoriteDisplay.length;
         }
+       }
       }
       favorites.spacing = Math.floor( (w - totalDisplayLen ) / (favorites.list.length - 1));
       favorites.margin = Math.floor((w - totalDisplayLen - (favorites.list.length - 1) * favorites.spacing ) / 2);
