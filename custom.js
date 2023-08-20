@@ -223,7 +223,7 @@
     },
   };
 
-  var asciiclock = { 
+ var asciiclock = { 
   nums:[["▄▄▄▄▄",
          "█□□□█",
          "█□□□█",
@@ -293,15 +293,17 @@
          // first erase previous to avoid glitches
          background.clear ( layout.asciiclock.left, layout.asciiclock.right, layout.asciiclock.top , layout.asciiclock.bottom);
          var d = ap37.getDate();
-         let h1 = asciiclock.nums[ Math.floor ( d.hour / 10 ) ];
-         let h2 = asciiclock.nums[ d.hour % 10 ];
-         let m1 = asciiclock.nums[ Math.floor ( d.minute / 10 ) ];
-         let m2 = asciiclock.nums[ d.minute % 10 ];
-         asciiclock.printnum( layout.asciiclock.left, layout.asciiclock.top, h1 );
-         asciiclock.printnum( layout.asciiclock.left + 6, layout.asciiclock.top, h2 );
-         asciiclock.printnum( layout.asciiclock.left + 12, layout.asciiclock.top, asciiclock.nums[10] );
-         asciiclock.printnum( layout.asciiclock.left + 14, layout.asciiclock.top, m1 );
-         asciiclock.printnum( layout.asciiclock.left + 20, layout.asciiclock.top, m2 );
+         let h1 = Math.floor ( d.hour / 10 ) 
+         let h2 = d.hour % 10 
+         let m1 = Math.floor ( d.minute / 10 ) 
+         let m2 = d.minute % 10 
+         if ( h1 > 0 ){
+           asciiclock.printnum( layout.asciiclock.left, layout.asciiclock.top, asciiclock.nums[h1]);
+         }
+         asciiclock.printnum( layout.asciiclock.left + 6, layout.asciiclock.top,asciiclock.nums[h2]);
+         asciiclock.printnum( layout.asciiclock.left + 12, layout.asciiclock.top, asciiclock.nums[10]);
+         asciiclock.printnum( layout.asciiclock.left + 14, layout.asciiclock.top,asciiclock.nums[m1]);
+         asciiclock.printnum( layout.asciiclock.left + 20, layout.asciiclock.top, asciiclock.nums[m2]);
        }
      },
      onTouch: function (x, y) {
