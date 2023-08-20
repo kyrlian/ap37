@@ -1,4 +1,4 @@
-# My fork of ap37 launcher script
+# My fork of [ap37 launcher script](https://github.com/apseren/ap37), to use with [app37 launcher app](https://play.google.com/store/apps/details?id=com.aurhe.ap37)
 
 - Original [script.js](./script.js)
 - [notifcount.js](./notifcount.js) is a minimal modification of [script.js](./script.js) to display notification count for each application. Because ap37.[getNotifications()](https://github.com/apseren/ap37#getnotifications) doesn't return the application name, I use a guess list based on the notification message to try to identify the application for each notification. If found I add the counter in place of the '_' in front of the application name.
