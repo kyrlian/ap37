@@ -9,9 +9,10 @@
   - Ability to hide some apps
   - Ability to rename some apps
   - Show favorite apps in the bottom
-  - Show markets only in 'home' mode
-  - Show transmissions only in 'home' mode
+  - Markets are hidden by default, activate in layout with layout.hidemarkets. Only visible in 'home' mode
+  - Transmissions are hidden by default, activate in layout with layout.hidetransmissions. Only visible in 'home' mode
   - Adapt layout in landscape orientation
+  - Long notifications and transmissions can be displayed with scrollers, disabled by default, activate with notifications.scroll and transmissions.scroll
   - Activate word and line glitches one by one
 - [loader.js](./loader.js) loads a file from internet and uses it as a launcher script, good for testing.
 
