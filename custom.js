@@ -8,7 +8,7 @@
     hideApps: ["ap37", "Internet", "Google", "Freebox", "Hacker's Keyboard", "Play Games", "Samsung O", "Steam Chat", "Steam Link"],
     homeApps: ["Citymapper", "Clash Royale", "Firefox", "foobar2000", "Inoreader", "Keep Notes", "Messages", "VLC"],
     // favoriteApps:["Phone","Signal","Gmail","Maps","Camera"], 
-    favoriteApps: { "Phone": "Call ✆", "Signal": "Msg ✍🗨", "Gmail": "Mail ✉", "Maps": "Map ➤", "Camera": "Cam ✨" }, // todo use unicode symbols
+    favoriteApps: { "Phone": "✆ Call", "Signal": "✍ Msg", "Gmail": "✉ Mail", "Maps": "➤ Map", "Camera": "✨ Cam" }, // symbols
     appDisplayName: { "My Files": "Files", "foobar2000": "foobar", "Mars: Mars": "Mars", "Coding Python": "Python", "Freebox Connect": "Freebox", "G7 Taxi": "G7", "Keep Notes": "Keep", "Linux Command Library": "Linux Command", "Mandel Browser": "Mandelbrot", "Picturesaurus for Reddit": "Picturesaurus", "Simple Text Editor": "TextEdit", "SNCF Connect": "SNCF" },
     notifguesslist: { "Bing": "Bing", "photos auto-added": "Photos", " years ago": "Photos", " Chest unlocked": "Clash Royale", "card request": "Clash Royale", "new messages": "Gmail" },
     bgcolor: '#333333',
@@ -474,8 +474,8 @@
 
   var favorites = {
     list: [],
-    prefix: "[ ",
-    postfix: " ]",
+    prefix: "", //"[ ",
+    postfix: "", //" ]",
     spacing: 0,
     margin: 0,
     init: function () {
