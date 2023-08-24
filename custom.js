@@ -120,6 +120,13 @@
       }
       return line;
     },
+    randomcolors: function(nbc){
+      let ca=[];
+      for (let i = 0; i < nbc; i++) {
+        ca.push(  Math.random() > .5 ? config.bgcolor : config.textcolorglitch );
+      }
+      return ca;
+    },
     printPattern: function (x0, xf, y) {//redraw background for a single line
       print(x0, y, background.pattern.substring(y * w + x0, y * w + xf), config.bgcolor);
     },
@@ -141,11 +148,13 @@
     init: function () {
       // background.pattern = rightPad(script, h * w, ' ');//original ap37 version
       background.pattern = background.randomline(h * w);
-      for (var i = 0; i < h; i++) {
-        background.buffer.push(background.pattern.substr(i * w, w));
-        background.bufferColors.push(arrayFill(config.bgcolor, w));
+      for (var y = 0; y < h; y++) {
+        background.buffer.push(background.pattern.substr(y * w, w));
+        background.bufferColors.push( background.randomcolors(w) );
+       // background.bufferColors.push(arrayFill(config.bgcolor, w));
+        ap37.printMultipleColors(0, y, background.buffer[y], background.bufferColors[y] )
       }
-      ap37.printLines(background.buffer, config.bgcolor);
+   // ap37.printLines(background.buffer, config.bgcolor);
     },
     onTouch: function (x, y) {
       layout.toggle();
@@ -177,7 +186,7 @@
       var d = ap37.getDate();
       var timestr = d.year +
         leftPad(d.month, 2, '0') + leftPad(d.day, 2, '0') + ' ' +
-        leftPad(d.hour, 2, '0') + leftPad(d.minute, 2, '0');
+        leftPad(d.hour, 2, '0') +":"+ leftPad(d.minute, 2, '0');
       print(layout.time.left, layout.header.top, timestr);
       time.right = time.left + timestr.length;
     },
@@ -213,6 +222,7 @@
     },
     onTouch: function (x, y) {
       if (x >= layout.meteo.left && x < layout.meteo.right) {//y tested by header
+        meteo.update();
         ap37.openLink("https://duckduckgo.com/?q=meteo+" + encodeURIComponent(config.city));
         return true;
       }
