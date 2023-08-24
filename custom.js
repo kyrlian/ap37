@@ -128,7 +128,8 @@
       return ca;
     },
     printPattern: function (x0, xf, y) {//redraw background for a single line
-      print(x0, y, background.pattern.substring(y * w + x0, y * w + xf), config.bgcolor);
+      // print(x0, y, background.pattern.substring(y * w + x0, y * w + xf), config.bgcolor);
+      ap37.printMultipleColors(x0, y, background.pattern.substring(y * w + x0, y * w + xf), background.bufferColors[y].slice(x0, xf) )
     },
     updatebuffer: function (x, y, text, color) {
       //update background buffer with text to be printed - used to restore glitches
@@ -152,7 +153,7 @@
         background.buffer.push(background.pattern.substr(y * w, w));
         background.bufferColors.push( background.randomcolors(w) );
        // background.bufferColors.push(arrayFill(config.bgcolor, w));
-        ap37.printMultipleColors(0, y, background.buffer[y], background.bufferColors[y] )
+        background.printPattern(0, w, y);
       }
    // ap37.printLines(background.buffer, config.bgcolor);
     },
