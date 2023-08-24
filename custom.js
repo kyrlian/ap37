@@ -129,12 +129,12 @@
     },
     printPattern: function (x0, xf, y) {//redraw background for a single line
       // print(x0, y, background.pattern.substring(y * w + x0, y * w + xf), config.bgcolor);
-      ap37.printMultipleColors(x0, y, background.pattern.substring(y * w + x0, y * w + xf), background.bufferColors[y].slice(x0, xf) )
+      ap37.printMultipleColors(x0, y, background.pattern.substring(y * w + x0, y * w + xf), background.randomcolors(xf-x0))
     },
     updatebuffer: function (x, y, text, color) {
       //update background buffer with text to be printed - used to restore glitches
       background.buffer[y] = background.buffer[y].substr(0, x) + text + background.buffer[y].substr(x + text.length);
-      for (var i = x; i < x + text.length; i++) {
+      for (let i = x; i < x + text.length; i++) {
         background.bufferColors[y][i] = color;
       }
     },
@@ -149,7 +149,7 @@
     init: function () {
       // background.pattern = rightPad(script, h * w, ' ');//original ap37 version
       background.pattern = background.randomline(h * w);
-      for (var y = 0; y < h; y++) {
+      for (let y = 0; y < h; y++) {
         background.buffer.push(background.pattern.substr(y * w, w));
         background.bufferColors.push( background.randomcolors(w) );
        // background.bufferColors.push(arrayFill(config.bgcolor, w));
