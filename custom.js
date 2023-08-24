@@ -128,7 +128,6 @@
       return ca;
     },
     printPattern: function (x0, xf, y) {//redraw background for a single line
-      // print(x0, y, background.pattern.substring(y * w + x0, y * w + xf), config.bgcolor);
       ap37.printMultipleColors(x0, y, background.pattern.substring(y * w + x0, y * w + xf), background.randomcolors(xf-x0))
     },
     updatebuffer: function (x, y, text, color) {
@@ -150,12 +149,10 @@
       // background.pattern = rightPad(script, h * w, ' ');//original ap37 version
       background.pattern = background.randomline(h * w);
       for (let y = 0; y < h; y++) {
-        background.buffer.push(background.pattern.substr(y * w, w));
+        background.buffer.push( background.pattern.substr(y * w, w) );
         background.bufferColors.push( background.randomcolors(w) );
-       // background.bufferColors.push(arrayFill(config.bgcolor, w));
         background.printPattern(0, w, y);
       }
-   // ap37.printLines(background.buffer, config.bgcolor);
     },
     onTouch: function (x, y) {
       layout.toggle();
