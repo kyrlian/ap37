@@ -5,7 +5,7 @@
   const config = {
     appversion: 'ap37-kyr',
     city: "Paris, France",
-    hideApps: ["ap37", "Internet", "Google", "Freebox", "Hacker's Keyboard", "Play Games", "Samsung O", "Steam Chat", "Steam Link"],
+    hideApps: ["ap37", "Internet", "Google", "Freebox", "Galaxy Store", "Hacker's Keyboard", "Netflix", "Play Games", "Saint-Lary-Soulan", "Samsung O", "Steam Chat", "Steam Link"],
     homeApps: ["Citymapper", "Clash Royale", "Firefox", "foobar2000", "Inoreader", "Keep Notes", "Messages", "VLC"],
     // favoriteApps:["Phone","Signal","Gmail","Maps","Camera"], 
     favoriteApps: { "Phone": "✆ Call", "Signal": "✍ Msg", "Gmail": "✉ Mail", "Maps": "➤ Map", "Camera": "✨ Cam" }, // symbols
@@ -53,7 +53,7 @@
       layout.battery = recalc({ left: w - 6, right: w });
       layout.notifications = recalc({ top: layout.header.bottom, height: layout.mode == 'home' ? 6 : 0, bottom: -1, page: "all" });//-1 will be calculated
       layout.footer = recalc({ top: -1, height: 2, bottom: h, page: "all" });
-      layout.favorites = recalc({ top: -1, height: layout.mode == 'home' ? 2 : 0, bottom: layout.footer.top, page: "all" });
+      layout.favorites = recalc({ top: -1, height: layout.mode == 'home' ? 2 : 2, bottom: layout.footer.top, page: "all" });
       // transmission and market height is 0 if not in layout home
       layout.hidetransmissions = true;// set to false to show transmission on home page
       layout.hidemarkets = true;// set to false to show markets on home page 
@@ -109,7 +109,7 @@
 
   // modules
   var background = {
-    bgchars: '             -..._/',// add more chars to vary background
+    bgchars: '                 -..._/',// add more chars to vary background
     buffer: [],
     bufferColors: [],
     pattern: '',
