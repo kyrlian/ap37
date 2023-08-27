@@ -59,6 +59,7 @@
       layout.hidemarkets = true;// set to false to show markets on home page 
       layout.transmissions = recalc({ top: -1, height: (layout.mode == 'home' && !layout.hidetransmissions ? 5 : 0), bottom: layout.favorites.top, page: "home" });
       layout.markets = recalc({ top: -1, height: (layout.mode == 'home' && !layout.hidemarkets ? 3 : 0), bottom: layout.transmissions.top, page: "home" });
+      layout.motd = recalc({ top : -1, height: (layout.mode == 'home' ? 3 : 0), bottom: layout.favorites.top, page: "home" });
       // 
       layout.apps = recalc({ top: layout.notifications.bottom + 3, height: -1, bottom: layout.markets.top, page: "all" });
       // adjust clock position in landscape orientation
@@ -75,6 +76,7 @@
       favorites.update()
       markets.update();
       transmissions.update();
+      motd.update();
       footer.update();
     },
   };
@@ -89,6 +91,7 @@
     asciiclock.init();// do clock after apps
     markets.init();
     transmissions.init();
+    motd.update();
     favorites.init();
     footer.init();
     ap37.setOnTouchListener(function (x, y) {
@@ -109,7 +112,7 @@
 
   // modules
   var background = {
-    bgchars: '                 -..._/',// add more chars to vary background
+    bgchars: '        /          .      -..._/',// add more chars to vary background
     buffer: [],
     bufferColors: [],
     pattern: '',
@@ -787,6 +790,30 @@
         }
       }
     },
+  };
+
+  var motd ={
+   update: function (){
+     if (layout.motd.height > 0) {
+        background.clear(0, w, layout.motd.top, layout.motd.bottom);
+        let x = 0;
+     //   print(0, layout.motd.top, '// MOTD', config.textcolordim);
+        get('https://zenquotes.io/api/random/', function (response) {
+          try {
+            var result = JSON.parse(response);
+            let quote = result[0].q + " - " +result[0].a ;
+            for(let i= 0; i < layout.motd.height; i++){
+              print(x, i+ layout.motd.top, quote.substr(i*(w-x),w-x));
+            }
+          } catch (e) {
+          };
+        });
+     }
+   },
+   init: function() {
+      motd.update();
+      setInterval(motd.update, 3600000);
+   }
   };
 
   var wordGlitch = {
