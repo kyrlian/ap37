@@ -59,7 +59,7 @@
       layout.hidemarkets = true;// set to false to show markets on home page 
       layout.transmissions = recalc({ top: -1, height: (layout.mode == 'home' && !layout.hidetransmissions ? 5 : 0), bottom: layout.favorites.top, page: "home" });
       layout.markets = recalc({ top: -1, height: (layout.mode == 'home' && !layout.hidemarkets ? 3 : 0), bottom: layout.transmissions.top, page: "home" });
-      layout.motd = recalc({ top : -1, height: (layout.mode == 'home' ? 3 : 0), bottom: layout.favorites.top, page: "home" });
+      layout.motd = recalc({ top : -1, height: (layout.mode == 'home' ? 3 : 0), bottom: layout.favorites.top-1, page: "home" });
       // 
       layout.apps = recalc({ top: layout.notifications.bottom + 3, height: -1, bottom: layout.markets.top, page: "all" });
       // adjust clock position in landscape orientation
