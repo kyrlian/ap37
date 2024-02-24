@@ -379,13 +379,19 @@
     list: [],
     scroll: false,
     active: false,
+    getappname: function(notification){
+      let n = apps.getbyid(notification.appId).name;
+      notification.appname=n;
+      return n;
+    },
     guessapp: function (notification) {
-      for (var k in config.notifguesslist) {
-        if (notification.name.search(k) >= 0) {
-          notification.appname = config.notifguesslist[k];
-          return notification.appname;
-        }
-      }
+      //for (var k in config.notifguesslist) {
+      //  if (notification.name.search(k) >= 0) {
+      //    notification.appname = config.notifguesslist[k];
+      //    return notification.appname;
+      //  }
+      // }
+      return notifications.getappname(notification);
     },
     init: function () {
       ap37.setOnNotificationsListener(notifications.update);
@@ -558,6 +564,10 @@
     lineHeight: 2,
     currentPage: 0,
     isNextPageButtonVisible: false,
+    getbyid: function(appid){
+      let appslist = ap37.getApps();
+      return appslist[appid];
+    },
     getbyname: function (name) {
       for (let k in apps.list) {
         let app = apps.list[k]
