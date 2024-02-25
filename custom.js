@@ -380,9 +380,12 @@
     scroll: false,
     active: false,
     getappname: function(notification){
-      let n = apps.getbyid(notification.appId).name;
-      notification.appname = n;
-      return n;
+      if (notification.appId>0){
+        let app = apps.getbyid(notification.appId)
+        let n = app.name;
+        notification.appname = n;
+        return n;
+      }
     },
     getappnotificationcount: function(app){
        let grps = ap37.getNotificationGroups(); // returns an array: [{id: 0, appId: 0, name: "Alarm", count: 2}, ...]
@@ -396,15 +399,6 @@
        app.notifcount=0;
        return 0;
     },
-    //guessapp: function (notification) {
-      //for (var k in config.notifguesslist) {
-      //  if (notification.name.search(k) >= 0) {
-      //    notification.appname = config.notifguesslist[k];
-      //    return notification.appname;
-      //  }
-      // }
-    //  return notifications.getappname(notification);
-   // },
     init: function () {
       ap37.setOnNotificationsListener(notifications.update);
       notifications.update();
@@ -418,19 +412,6 @@
           scrollers.clear(notifications.list);
           // get current notifications list 
           notifications.list = ap37.getNotifications();
-          // count notification per app
-       //   let notificationcounter = {};
-         // for (let i in notifications.list) {
-         //   var notification = notifications.list[i];
-       //     notifications.getappname(notification);
-         //   if (notification.appname) {
-         //     if (notification.appname in notificationcounter) {
-          //      notificationcounter[notification.appname] = notificationcounter[notification.appname] + 1;
-          //    } else {
-          //      notificationcounter[notification.appname] = 1;
-        //      }
-         //   }
-       //   }
           // update notif counter on apps with notifications
           for (var j in apps.list) {
             var app = apps.list[j]
