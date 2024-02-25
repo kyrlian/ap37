@@ -553,7 +553,7 @@
           favorites.printApp(app, false);
         }, 1000);
       }
-      // TODO add notification count, see apps
+      // add notification count, see apps
       apps.printNotifCount(app);
     },
     onTouch: function (x, y) {
