@@ -416,9 +416,6 @@
           for (var j in apps.list) {
             var app = apps.list[j]
             if (app.page == apps.currentPage ){// && app.displaymode == layout.mode) {
-         // if (app.name in notificationcounter && app.page == apps.currentPage && app.displaymode == layout.mode) {
-              // app.notifcount = notificationcounter[app.name];
-             // app.notifcount = notifications.getappnotificationcount(app);
               apps.printNotifCount(app);
             }
           }
@@ -534,8 +531,15 @@
           favorites.printApp(app, false);
         }, 1000);
       }
-      // add notification count, see apps
-      apps.printNotifCount(app);
+      // add notification count
+      favorites.printNotifCount(app);
+    },
+    printNotifCount: function (app) {// also called on notif reception
+      notifications.getappnotificationcount(app)
+      if (app.notifcount > 0) {
+        let nameonly = app.favoriteDisplay.split(" ")[1]
+        print(app.x0, app.y, nameonly +':'+ app.notifcount, config.textcolorbright);//highlight prefix
+      }
     },
     onTouch: function (x, y) {
       if (y >= layout.favorites.top && y < layout.favorites.bottom) {
