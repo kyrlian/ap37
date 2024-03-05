@@ -1,4 +1,4 @@
-(function script() {
+ (function script() {
   'use strict';
 
   // config
@@ -6,11 +6,11 @@
     appversion: 'ap37-kyr',
     city: "Paris, France",
     hideApps: ["ap37", "Internet", "Google", "Freebox", "Galaxy Store", "Hacker's Keyboard", "Netflix", "Play Games", "Saint-Lary-Soulan", "Samsung O", "Steam Chat", "Steam Link"],
-    homeApps: ["Citymapper", "Clash Royale", "Firefox", "foobar2000", "Inoreader", "Keep Notes", "Messages", "VLC"],
+    homeApps: ["Gmail","Citymapper", "Clash Royale", "Firefox", "foobar2000", "Inoreader", "Keep Notes", "Messages", "VLC"],
     // favoriteApps:["Phone","Signal","Gmail","Maps","Camera"], 
     favoriteApps: { "Phone": "✆ Call", "Signal": "✍ Msg", "Gmail": "✉ Mail", "Maps": "➤ Map", "Camera": "✨ Cam" }, // symbols
-    appDisplayName: { "My Files": "Files", "foobar2000": "foobar", "Mars: Mars": "Mars", "Coding Python": "Python", "Freebox Connect": "Freebox", "G7 Taxi": "G7", "Keep Notes": "Keep", "Linux Command Library": "Linux Command", "Mandel Browser": "Mandelbrot", "Picturesaurus for Reddit": "Picturesaurus", "Simple Text Editor": "TextEdit", "SNCF Connect": "SNCF" },
-    notifguesslist: { "Bing": "Bing", "photos auto-added": "Photos", " years ago": "Photos", " Chest unlocked": "Clash Royale", "card request": "Clash Royale", "new messages": "Gmail" },
+    appDisplayName: { "One Finger Death Punch":"OFDP", "My Files": "Files", "foobar2000": "foobar", "Mars: Mars": "Mars", "Coding Python": "Python", "Freebox Connect": "Freebox", "G7 Taxi": "G7", "Keep Notes": "Keep", "Linux Command Library": "Linux Command", "Mandel Browser": "Mandelbrot", "Picturesaurus for Reddit": "Picturesaurus", "Simple Text Editor": "TextEdit", "SNCF Connect": "SNCF" },
+    // notifguesslist: { "Bing": "Bing", "photos auto-added": "Photos", " years ago": "Photos", " Chest unlocked": "Clash Royale", "card request": "Clash Royale", "new messages": "Gmail" },
     bgcolor: '#333333',
     textcolordim: '#999999',
     textcolorbright: '#ffffff',
@@ -379,13 +379,25 @@
     list: [],
     scroll: false,
     active: false,
-    guessapp: function (notification) {
-      for (var k in config.notifguesslist) {
-        if (notification.name.search(k) >= 0) {
-          notification.appname = config.notifguesslist[k];
-          return notification.appname;
-        }
+    getappname: function(notification){
+      if (notification.appId>0){
+        let app = apps.getbyid(notification.appId)
+        let n = app.name;
+        notification.appname = n;
+        return n;
       }
+    },
+    getappnotificationcount: function(app){
+       let grps = ap37.getNotificationGroups(); // returns an array: [{id: 0, appId: 0, name: "Alarm", count: 2}, ...]
+       for( let gid in grps){ 
+         let g = grps[gid];
+         if ( g.appId == app.id){
+           app.notifcount = g.count;
+           return g.count;
+         }
+       }
+       app.notifcount=0;
+       return 0;
     },
     init: function () {
       ap37.setOnNotificationsListener(notifications.update);
@@ -400,24 +412,10 @@
           scrollers.clear(notifications.list);
           // get current notifications list 
           notifications.list = ap37.getNotifications();
-          // count notification per app
-          let notificationcounter = {};
-          for (let i in notifications.list) {
-            var notification = notifications.list[i];
-            notifications.guessapp(notification);
-            if (notification.appname) {
-              if (notification.appname in notificationcounter) {
-                notificationcounter[notification.appname] = notificationcounter[notification.appname] + 1;
-              } else {
-                notificationcounter[notification.appname] = 1;
-              }
-            }
-          }
           // update notif counter on apps with notifications
           for (var j in apps.list) {
             var app = apps.list[j]
-            if (app.name in notificationcounter && app.page == apps.currentPage && app.displaymode == layout.mode) {
-              app.notifcount = notificationcounter[app.name];
+            if (app.page == apps.currentPage ){// && app.displaymode == layout.mode) {
               apps.printNotifCount(app);
             }
           }
@@ -437,6 +435,7 @@
       }
     },
     printNotification: function (notification, highlight) {
+      notifications.getappname(notification)
       var name = notification.name;
       var disp = (notification.appname ? notification.appname + ":" : " ") + name
       if (notification.ellipsis) {
@@ -532,6 +531,15 @@
           favorites.printApp(app, false);
         }, 1000);
       }
+      // add notification count
+      favorites.printNotifCount(app);
+    },
+    printNotifCount: function (app) {// also called on notif reception
+      notifications.getappnotificationcount(app)
+      if (app.notifcount > 0) {
+        let nameonly = app.favoriteDisplay.split(" ")[1]
+        print(app.x0, app.y, nameonly +':'+ app.notifcount, config.textcolorbright);//highlight prefix
+      }
     },
     onTouch: function (x, y) {
       if (y >= layout.favorites.top && y < layout.favorites.bottom) {
@@ -549,7 +557,7 @@
 
   var apps = {
     appprefix: '>',
-    appprefixonnotif: '>',//will also be highlighted
+    appprefixonnotif: '',//will also be highlighted
     list: [],
     pagefirstappnum: { 0: 0 },
     margin: 1,
@@ -558,6 +566,10 @@
     lineHeight: 2,
     currentPage: 0,
     isNextPageButtonVisible: false,
+    getbyid: function(appid){
+      let appslist = ap37.getApps();
+      return appslist[appid];
+    },
     getbyname: function (name) {
       for (let k in apps.list) {
         let app = apps.list[k]
@@ -617,20 +629,22 @@
       if (layout.mode == 'home') {//home mode
         display = display.substring(0, apps.homeAppWidth - 1)
       }
-      print(app.x0, app.y, display, highlight ? config.textcolorclicked : config.textcolordim);
       app.xf = app.x0 + display.length;
-      apps.printNotifCount(app);
       if (highlight) {
+        print(app.x0, app.y, display, config.textcolorclicked);
         setTimeout(function () {
           apps.printApp(app, false);
         }, 1000);
       } else {
+        print(app.x0, app.y, display, config.textcolordim);
         print(app.x0 + apps.appprefix.length, app.y, app.displayname[0], config.textcolorbright);//highlight first letter after prefix
+        apps.printNotifCount(app);// override in case of notifs 
       }
     },
-    printNotifCount: function (app) {
+    printNotifCount: function (app) {// also called on notif reception
+      notifications.getappnotificationcount(app)
       if (app.notifcount > 0) {
-        print(app.x0, app.y, apps.appprefixonnotif + app.displayname, config.textcolorbright);//highlight prefix
+        print(app.x0, app.y, apps.appprefixonnotif + app.displayname +':'+ app.notifcount, config.textcolorbright);//highlight prefix
       }
     },
     printPagination: function (onoff) {
