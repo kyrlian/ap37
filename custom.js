@@ -1,4 +1,4 @@
- (function script() {
+(function script() {
   'use strict';
 
   // config
@@ -6,16 +6,23 @@
     appversion: 'ap37-kyr',
     city: "Paris, France",
     hideApps: ["ap37", "Internet", "Google", "Freebox", "Galaxy Store", "Hacker's Keyboard", "Netflix", "Play Games", "Saint-Lary-Soulan", "Samsung O", "Steam Chat", "Steam Link"],
-    homeApps: ["Gmail","Citymapper", "Clash Royale", "Firefox", "foobar2000", "Inoreader", "Keep Notes", "Messages", "VLC"],
+    homeApps: ["Gmail", "Citymapper", "Radio France", "Firefox", "foobar2000", "Inoreader", "Keep Notes", "Messages", "VLC"],
     // favoriteApps:["Phone","Signal","Gmail","Maps","Camera"], 
     favoriteApps: { "Phone": "✆ Call", "Signal": "✍ Msg", "Gmail": "✉ Mail", "Maps": "➤ Map", "Camera": "✨ Cam" }, // symbols
-    appDisplayName: { "One Finger Death Punch":"OFDP", "My Files": "Files", "foobar2000": "foobar", "Mars: Mars": "Mars", "Coding Python": "Python", "Freebox Connect": "Freebox", "G7 Taxi": "G7", "Keep Notes": "Keep", "Linux Command Library": "Linux Command", "Mandel Browser": "Mandelbrot", "Picturesaurus for Reddit": "Picturesaurus", "Simple Text Editor": "TextEdit", "SNCF Connect": "SNCF" },
+    appDisplayName: { "One Finger Death Punch": "OFDP", "My Files": "Files", "foobar2000": "foobar", "Mars: Mars": "Mars", "Coding Python": "Python", "Freebox Connect": "Freebox", "G7 Taxi": "G7", "Keep Notes": "Keep", "Linux Command Library": "Linux Command", "Mandel Browser": "Mandelbrot", "Picturesaurus for Reddit": "Picturesaurus", "Simple Text Editor": "TextEdit", "SNCF Connect": "SNCF" },
     // notifguesslist: { "Bing": "Bing", "photos auto-added": "Photos", " years ago": "Photos", " Chest unlocked": "Clash Royale", "card request": "Clash Royale", "new messages": "Gmail" },
+    // dark
     bgcolor: '#333333',
     textcolordim: '#999999',
     textcolorbright: '#ffffff',
     textcolorclicked: '#ff3333',
     textcolorglitch: '#666666',
+    // light
+    // bgcolor: '#ffffff',
+    // textcolordim: '#999999',
+    // textcolorbright: '#ffffff',
+    // textcolorclicked: '#ff3333',
+    // textcolorglitch: '#666666',
   };
 
   // easy debug, called by footer 
@@ -59,14 +66,14 @@
       layout.hidemarkets = true;// set to false to show markets on home page 
       layout.transmissions = recalc({ top: -1, height: (layout.mode == 'home' && !layout.hidetransmissions ? 5 : 0), bottom: layout.favorites.top, page: "home" });
       layout.markets = recalc({ top: -1, height: (layout.mode == 'home' && !layout.hidemarkets ? 3 : 0), bottom: layout.transmissions.top, page: "home" });
-      layout.motd = recalc({ top : -1, height: (layout.mode == 'home' ? 3 : 0), bottom: layout.favorites.top-1, page: "home" });
+      layout.motd = recalc({ top: -1, height: (layout.mode == 'home' ? 3 : 0), bottom: layout.favorites.top - 1, page: "home" });
       // 
-      layout.apps = recalc({ top: layout.notifications.bottom + 3, height: -1, bottom: layout.markets.top, page: "all" });
+      layout.apps = recalc({ top: layout.notifications.bottom + (layout.mode == 'home' ? 10 : 3), height: -1, bottom: layout.markets.top, page: "all" });
       // adjust clock position in landscape orientation
-      layout.asciiclock = recalc({ top: (layout.orientation == 'portrait' ? layout.notifications.bottom + 5 : layout.header.bottom + 5), height: 5, bottom: -1, left: w - 26, right: w, page: "home" });
+      layout.asciiclock = recalc({ top: (layout.orientation == 'portrait' ? layout.notifications.bottom + 5 : layout.header.bottom + 5), height: 5, bottom: -1, left: w - (layout.orientation == 'portrait' ? 26 : 42), right: w, page: "home" });
     },
     toggle: function () {// toggle display mode
-      layout.mode = (layout.mode == 'home') ? 'list' : 'home';//home or list
+      layout.mode = layout.mode == 'home' ? 'list' : 'home';//home or list
       layout.update();
       apps.currentPage = 0;
       background.clear(0, w, layout.notifications.top, layout.transmissions.bottom);
@@ -112,7 +119,7 @@
 
   // modules
   var background = {
-    bgchars: '        /          .      -..._/',// add more chars to vary background
+    bgchars: '-_//...      ',// add more chars to vary background
     buffer: [],
     bufferColors: [],
     pattern: '',
@@ -123,15 +130,15 @@
       }
       return line;
     },
-    randomcolors: function(nbc){
-      let ca=[];
+    randomcolors: function (nbc) {
+      let ca = [];
       for (let i = 0; i < nbc; i++) {
-        ca.push(  Math.random() > .5 ? config.bgcolor : config.textcolorglitch );
+        ca.push(Math.random() > .5 ? config.bgcolor : config.textcolorglitch);
       }
       return ca;
     },
     printPattern: function (x0, xf, y) {//redraw background for a single line
-      ap37.printMultipleColors(x0, y, background.pattern.substring(y * w + x0, y * w + xf), background.randomcolors(xf-x0))
+      ap37.printMultipleColors(x0, y, background.pattern.substring(y * w + x0, y * w + xf), background.randomcolors(xf - x0))
     },
     updatebuffer: function (x, y, text, color) {
       //update background buffer with text to be printed - used to restore glitches
@@ -152,8 +159,8 @@
       // background.pattern = rightPad(script, h * w, ' ');//original ap37 version
       background.pattern = background.randomline(h * w);
       for (let y = 0; y < h; y++) {
-        background.buffer.push( background.pattern.substr(y * w, w) );
-        background.bufferColors.push( background.randomcolors(w) );
+        background.buffer.push(background.pattern.substr(y * w, w));
+        background.bufferColors.push(background.randomcolors(w));
         background.printPattern(0, w, y);
       }
     },
@@ -187,7 +194,7 @@
       var d = ap37.getDate();
       var timestr = d.year +
         leftPad(d.month, 2, '0') + leftPad(d.day, 2, '0') + ' ' +
-        leftPad(d.hour, 2, '0') +":"+ leftPad(d.minute, 2, '0');
+        leftPad(d.hour, 2, '0') + ":" + leftPad(d.minute, 2, '0');
       print(layout.time.left, layout.header.top, timestr);
       time.right = time.left + timestr.length;
     },
@@ -252,52 +259,52 @@
       "█□□□█",
       "█□□□█",
       "█▄▄▄█"],
-     ["□□▄□□",
+    ["□□▄□□",
       "▀▀█□□",
       "□□█□□",
       "□□█□□",
       "▄▄█▄▄"],
-     ["▄▄▄▄▄",
+    ["▄▄▄▄▄",
       "□□□□█",
       "▄▄▄▄█",
       "█□□□□",
       "█▄▄▄▄"],
-     ["▄▄▄▄▄",
+    ["▄▄▄▄▄",
       "□□□□█",
       "□□▄▄█",
       "□□□□█",
       "▄▄▄▄█"],
-     ["▄□□□▄",
+    ["▄□□□▄",
       "█□□□█",
       "█▄▄▄█",
       "□□□□█",
       "□□□□█"],
-     ["▄▄▄▄▄",
+    ["▄▄▄▄▄",
       "█□□□□",
       "█▄▄▄▄",
       "□□□□█",
       "▄▄▄▄█"],
-     ["▄▄▄▄▄",
+    ["▄▄▄▄▄",
       "█□□□□",
       "█▄▄▄▄",
       "█□□□█",
       "█▄▄▄█"],
-     ["▄▄▄▄▄",
+    ["▄▄▄▄▄",
       "□□□□█",
       "□□□□█",
       "□□□□█",
       "□□□□█"],
-     ["▄▄▄▄▄",
+    ["▄▄▄▄▄",
       "█□□□█",
       "█▄▄▄█",
       "█□□□█",
       "█▄▄▄█"],
-     ["▄▄▄▄▄",
+    ["▄▄▄▄▄",
       "█□□□█",
       "█▄▄▄█",
       "□□□□█",
       "▄▄▄▄█"],
-     ["□",
+    ["□",
       "▄",
       "□",
       "▄",
@@ -342,7 +349,7 @@
     xf: 0,
     eof: "EOF",
     init: function () {
-      // scrollers.create(0, w, footer.top, "  ░░▒▒▓▓▒▒░░".repeat(w/8), config.textcolordim);
+      // scrollers.create(0, w, footer.top, " ░░▒▒▓▓▒▒░░".repeat(w/8), config.textcolordim);
       print(3, layout.footer.bottom - 1, config.appversion);//bottom left
       footer.x0 = Math.floor(((w - layout.mode.length) / 2));
       footer.xf = footer.x0 + layout.mode.length;
@@ -379,25 +386,25 @@
     list: [],
     scroll: false,
     active: false,
-    getappname: function(notification){
-      if (notification.appId>0){
+    getappname: function (notification) {
+      if (notification.appId > 0) {
         let app = apps.getbyid(notification.appId)
         let n = app.name;
         notification.appname = n;
         return n;
       }
     },
-    getappnotificationcount: function(app){
-       let grps = ap37.getNotificationGroups(); // returns an array: [{id: 0, appId: 0, name: "Alarm", count: 2}, ...]
-       for( let gid in grps){ 
-         let g = grps[gid];
-         if ( g.appId == app.id){
-           app.notifcount = g.count;
-           return g.count;
-         }
-       }
-       app.notifcount=0;
-       return 0;
+    getappnotificationcount: function (app) {
+      let grps = ap37.getNotificationGroups(); // returns an array: [{id: 0, appId: 0, name: "Alarm", count: 2}, ...]
+      for (let gid in grps) {
+        let g = grps[gid];
+        if (g.appId == app.id) {
+          app.notifcount = g.count;
+          return g.count;
+        }
+      }
+      app.notifcount = 0;
+      return 0;
     },
     init: function () {
       ap37.setOnNotificationsListener(notifications.update);
@@ -415,7 +422,7 @@
           // update notif counter on apps with notifications
           for (var j in apps.list) {
             var app = apps.list[j]
-            if (app.page == apps.currentPage ){// && app.displaymode == layout.mode) {
+            if (app.page == apps.currentPage) {// && app.displaymode == layout.mode) {
               apps.printNotifCount(app);
             }
           }
@@ -474,7 +481,7 @@
               return true;
             }
           }
-        } else if (y === layout.notifications.top) {// permission request alert on line  3
+        } else if (y === layout.notifications.top) {// permission request alert on line 3
           ap37.requestNotificationsPermission();
         }
         return true;
@@ -538,7 +545,7 @@
       notifications.getappnotificationcount(app)
       if (app.notifcount > 0) {
         let nameonly = app.favoriteDisplay.split(" ")[1]
-        print(app.x0, app.y, nameonly +':'+ app.notifcount, config.textcolorbright);//highlight prefix
+        print(app.x0, app.y, nameonly + ':' + app.notifcount, config.textcolorbright);//highlight prefix
       }
     },
     onTouch: function (x, y) {
@@ -566,7 +573,7 @@
     lineHeight: 2,
     currentPage: 0,
     isNextPageButtonVisible: false,
-    getbyid: function(appid){
+    getbyid: function (appid) {
       let appslist = ap37.getApps();
       return appslist[appid];
     },
@@ -644,7 +651,7 @@
     printNotifCount: function (app) {// also called on notif reception
       notifications.getappnotificationcount(app)
       if (app.notifcount > 0) {
-        print(app.x0, app.y, apps.appprefixonnotif + app.displayname +':'+ app.notifcount, config.textcolorbright);//highlight prefix
+        print(app.x0, app.y, apps.appprefixonnotif + app.displayname + ':' + app.notifcount, config.textcolorbright);//highlight prefix
       }
     },
     printPagination: function (onoff) {
@@ -806,28 +813,28 @@
     },
   };
 
-  var motd ={
-   update: function (){
-     if (layout.motd.height > 0) {
+  var motd = {
+    update: function () {
+      if (layout.motd.height > 0) {
         background.clear(0, w, layout.motd.top, layout.motd.bottom);
         let x = 0;
-     //   print(0, layout.motd.top, '// MOTD', config.textcolordim);
+        // print(0, layout.motd.top, '// MOTD', config.textcolordim);
         get('https://zenquotes.io/api/random/', function (response) {
           try {
             var result = JSON.parse(response);
-            let quote = result[0].q + " - " +result[0].a ;
-            for(let i= 0; i < layout.motd.height; i++){
-              print(x, i+ layout.motd.top, quote.substr(i*(w-x),w-x));
+            let quote = result[0].q + " - " + result[0].a;
+            for (let i = 0; i < layout.motd.height; i++) {
+              print(x, i + layout.motd.top, quote.substr(i * (w - x), w - x));
             }
           } catch (e) {
           };
         });
-     }
-   },
-   init: function() {
+      }
+    },
+    init: function () {
       motd.update();
       setInterval(motd.update, 3600000);
-   }
+    }
   };
 
   var wordGlitch = {
@@ -1071,3 +1078,4 @@
 
 // pull requests github.com/kyrlian/ap37
 // pull requests github.com/apseren/ap37
+
