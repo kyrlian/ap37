@@ -142,13 +142,13 @@
     },
     updatebuffer: function (x, y, text, color) {
       //update background buffer with text to be printed - used to restore glitches
-      background.buffer[y] = background.buffer[y].substr(0, x) + text + background.buffer[y].substr(x + text.length);
+      background.buffer[y] = background.buffer[y].substring(0, x) + text + background.buffer[y].substring(x + text.length);
       for (let i = x; i < x + text.length; i++) {
         background.bufferColors[y][i] = color;
       }
     },
     restorebuffer: function (x0, xf, y) {
-      ap37.printMultipleColors(x0, y, background.buffer[y].substr(x0, xf), background.bufferColors[y].slice(x0, xf));
+      ap37.printMultipleColors(x0, y, background.buffer[y].substring(x0, xf), background.bufferColors[y].slice(x0, xf));
     },
     clear: function (x0, xf, y0, yf) {
       for (let i = y0; i < yf; i++) {
@@ -159,7 +159,7 @@
       // background.pattern = rightPad(script, h * w, ' ');//original ap37 version
       background.pattern = background.randomline(h * w);
       for (let y = 0; y < h; y++) {
-        background.buffer.push(background.pattern.substr(y * w, w));
+        background.buffer.push(background.pattern.substring(y * w, w));
         background.bufferColors.push(background.randomcolors(w));
         background.printPattern(0, w, y);
       }
@@ -824,7 +824,7 @@
             var result = JSON.parse(response);
             let quote = result[0].q + " - " + result[0].a;
             for (let i = 0; i < layout.motd.height; i++) {
-              print(x, i + layout.motd.top, quote.substr(i * (w - x), w - x));
+              print(x, i + layout.motd.top, quote.substring(i * (w - x), w - x));
             }
           } catch (e) {
           };
@@ -859,7 +859,7 @@
         g.y = Math.floor(Math.random() * h);
         g.text = [];
         for (var i = 0; i < 5; i++) {
-          //g.text.push(Math.random().toString(36).substr(2, g.length)); //original word glitch
+          //g.text.push(Math.random().toString(36).substring(2, g.length)); //original word glitch
           g.text.push(background.randomline(g.length))
         }
         ap37.print(g.x, g.y, g.text[g.tick], config.textcolorglitch);
